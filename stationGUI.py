@@ -248,12 +248,87 @@ def branchFtn():
     
     # Creating restockSubmit function
     # For interbranch supply, I need a way to calculate the fuel used for a branch so that I can determine the mainStockSupplyID
-    def restockSubmitFtn():
-        return
+    def restockingBranch1Ftn():
+        # EDITOR_RESTOCKING_BRANCH1 WINDOW
+
+        # Creating a new window advance payments
+        global editor_restocking_branch1 #need it to be global so that we can use editor.destroy 
+        editor_restocking_branch1 = Tk() #this is the main window its also the first line to put when working with tkinter
+        editor_restocking_branch1.title('Dechargement Place') #this is the title of the window
+        editor_restocking_branch1.geometry("400x260") #specifying the size of the root window
+
+        
+        # Creating restockSubmit function
+        def restockSubmitFtn():
+            return
     
-    # Creating restockCancel function
-    def restockCancelFtn():
-        return
+        # Creating restockCancel function
+        def restockCancelFtn():
+            restock_branch_source_pms_branch1.delete(0, END)
+            restock_truck_pms_branch1.delete(0, END)
+            restock_amount_pms_branch1.delete(0, END)
+            restock_branch_source_ago_branch1.delete(0, END)
+            restock_truck_ago_branch1.delete(0, END)
+            restock_amount_ago_branch1.delete(0, END)
+        
+        
+        # Creating Labels
+        #restocking_label = Label(editor_branch1, text="Dechargement")
+        #restocking_label.grid(row=1, column=0, columnspan=4, pady=(10,0))
+        
+        pms_label = Label(editor_restocking_branch1, text="PMS")
+        pms_label.grid(row=1, column=0, columnspan=2, pady=(10,0))
+        restock_branch_label = Label(editor_restocking_branch1, text="Branch")
+        restock_branch_label.grid(row=2, column=0)
+        restock_truck_label = Label(editor_restocking_branch1, text="Plaque")
+        restock_truck_label.grid(row=3, column=0)
+        restock_amount_label = Label(editor_restocking_branch1, text="Quantite (L)")
+        restock_amount_label.grid(row=4, column=0)
+        
+
+        ago_label = Label(editor_restocking_branch1, text="AGO")
+        ago_label.grid(row=5, column=0, columnspan= 2, pady=(10,0))
+        restock_branch_label = Label(editor_restocking_branch1, text="Branch")
+        restock_branch_label.grid(row=6, column=0)
+        restock_truck_label = Label(editor_restocking_branch1, text="Plaque")
+        restock_truck_label.grid(row=7, column=0)
+        restock_amount_label = Label(editor_restocking_branch1, text="Quantite (L)")
+        restock_amount_label.grid(row=8, column=0)
+        
+        # Creating global variables (will be useful in entering data to db)
+        global restock_branch_source_pms_branch1
+        global restock_truck_pms_branch1
+        global restock_amount_pms_branch1
+        global restock_branch_source_ago_branch1
+        global restock_truck_ago_branch1
+        global restock_amount_ago_branch1
+
+
+        # Creating text boxes
+        # PMS
+        restock_branch_source_pms_branch1 = Entry(editor_restocking_branch1, width=30)
+        restock_branch_source_pms_branch1.grid(row=2, column=1, padx=20)
+        restock_truck_pms_branch1 = Entry(editor_restocking_branch1, width=30)
+        restock_truck_pms_branch1.grid(row=3, column=1)
+        restock_amount_pms_branch1 = Entry(editor_restocking_branch1, width=30)
+        restock_amount_pms_branch1.grid(row=4, column=1)  
+        # AGO
+        restock_branch_source_ago_branch1 = Entry(editor_restocking_branch1, width=30)
+        restock_branch_source_ago_branch1.grid(row=6, column=1, padx=20)
+        restock_truck_ago_branch1 = Entry(editor_restocking_branch1, width=30)
+        restock_truck_ago_branch1.grid(row=7, column=1)
+        restock_amount_ago_branch1 = Entry(editor_restocking_branch1, width=30)
+        restock_amount_ago_branch1.grid(row=8, column=1)
+        
+        
+        # Creating buttons for Restocking
+        cancel_btn = Button(editor_restocking_branch1, text="Cancel", command=restockCancelFtn)
+        cancel_btn.grid(row=9, column=0, pady=5, padx=(10,0), ipadx=40)
+
+        submit_btn = Button(editor_restocking_branch1, text="Submit", command=restockSubmitFtn)
+        submit_btn.grid(row=9, column=1, pady=5, padx=(10,0), ipadx=60)
+    
+    
     
     # Creating advancePaymentFtn function
     def advancePaymentFtn():
@@ -407,69 +482,29 @@ def branchFtn():
 
     total_restock_liters_pms_branch1 = 0
     total_restock_liters_ago_branch1 = 0
+    # Creating a button to launch the restocking window 
+    restocking_branch1_btn = Button(editor_branch1, text="Dechargement", command=restockingBranch1Ftn)
+    restocking_branch1_btn.grid(row=16,column=0, columnspan=4, pady=10, padx=5, ipadx=315)
 
-    # Creating Labels
-    restocking_label = Label(editor_branch1, text="Dechargement")
-    restocking_label.grid(row=16, column=0, columnspan=4, pady=(10,0))
-    
-    pms_label = Label(editor_branch1, text="PMS")
-    pms_label.grid(row=17, column=0, columnspan=2, pady=(10,0))
-    restock_branch_label = Label(editor_branch1, text="Branch")
-    restock_branch_label.grid(row=18, column=0)
-    restock_truck_label = Label(editor_branch1, text="Plaque")
-    restock_truck_label.grid(row=19, column=0)
-    restock_amount_label = Label(editor_branch1, text="Quantite (L)")
-    restock_amount_label.grid(row=20, column=0)
-    restock_total_label = Label(editor_branch1, text="Total (L)")
-    restock_total_label.grid(row=21, column=0)
+    # Creating Total (L) labels
+    restock_total_label = Label(editor_branch1, text="Total (L) PMS")
+    restock_total_label.grid(row=17, column=0, pady=5)
     restock_total_pms_label = Label(editor_branch1, text=total_restock_liters_pms_branch1, borderwidth=3, relief="sunken")
-    restock_total_pms_label.grid(row=21, column=1, ipadx=87)
+    restock_total_pms_label.grid(row=17, column=1, ipadx=87)
 
-    ago_label = Label(editor_branch1, text="AGO")
-    ago_label.grid(row=17, column=2, columnspan= 2, pady=(10,0))
-    restock_branch_label = Label(editor_branch1, text="Branch")
-    restock_branch_label.grid(row=18, column=2)
-    restock_truck_label = Label(editor_branch1, text="Plaque")
-    restock_truck_label.grid(row=19, column=2)
-    restock_amount_label = Label(editor_branch1, text="Quantite (L)")
-    restock_amount_label.grid(row=20, column=2)
-    restock_total_label = Label(editor_branch1, text="Total (L)")
-    restock_total_label.grid(row=21, column=2)
+    restock_total_label = Label(editor_branch1, text="Total (L) AGO")
+    restock_total_label.grid(row=17, column=2)
     restock_total_ago_label = Label(editor_branch1, text=total_restock_liters_ago_branch1, borderwidth=3, relief="sunken")
-    restock_total_ago_label.grid(row=21, column=3, ipadx=87)
-
-    # Creating text boxes
-    # PMS
-    restock_branch_source_pms_tbx = Entry(editor_branch1, width=30)
-    restock_branch_source_pms_tbx.grid(row=18, column=1, padx=20)
-    restock_truck_pms_tbx = Entry(editor_branch1, width=30)
-    restock_truck_pms_tbx.grid(row=19, column=1)
-    restock_amount_pms_tbx = Entry(editor_branch1, width=30)
-    restock_amount_pms_tbx.grid(row=20, column=1)  
-    # AGO
-    restock_branch_source_ago_tbx = Entry(editor_branch1, width=30)
-    restock_branch_source_ago_tbx.grid(row=18, column=3, padx=20)
-    restock_truck_ago_tbx = Entry(editor_branch1, width=30)
-    restock_truck_ago_tbx.grid(row=19, column=3)
-    restock_amount_ago_tbx = Entry(editor_branch1, width=30)
-    restock_amount_ago_tbx.grid(row=20, column=3)
-    
-    
-    # Creating buttons for Restocking
-    cancel_btn = Button(editor_branch1, text="Cancel", command=restockCancelFtn)
-    cancel_btn.grid(row=22, column=0, columnspan=2, pady=10, ipadx=80)
-
-    submit_btn = Button(editor_branch1, text="Submit", command=restockSubmitFtn)
-    submit_btn.grid(row=22, column=2, columnspan=2, pady=10, ipadx=90)
+    restock_total_ago_label.grid(row=17, column=3, ipadx=87)
 
     # payments
     
     #Creating buttons to launch the advanced and debt payments windows
     advance_payment_btn = Button(editor_branch1, text="Advance Payments", command=advancePaymentFtn)
-    advance_payment_btn.grid(row=23,column=0, columnspan=3, pady=15, padx=5, ipadx=180)
+    advance_payment_btn.grid(row=18,column=0, columnspan=4, pady=15, padx=5, ipadx=300)
 
     debt_payment_btn = Button(editor_branch1, text="Debt Payments", command=debtPaymentFtn)
-    debt_payment_btn.grid(row=24,column=0, columnspan=3, pady=5, padx=5, ipadx=190)
+    debt_payment_btn.grid(row=19,column=0, columnspan=4, pady=5, padx=5, ipadx=310)
 
 
 #a Tkinter variable

@@ -489,8 +489,10 @@ c.execute("""CREATE TABLE tblMainSupplyStock (
         supplyBranchID integer,
         supplyProductID integer,
         supplyTruckNumber integer,
+        supplyCurrencyID,
         supplyPurchasePrice money,
         supplyLiters real,
+        FOREIGN KEY(supplyCurrencyID) REFERENCES tblCurrency(currencyID),
         FOREIGN KEY(supplyBranchID) REFERENCES tblBranches(branchID),
         FOREIGN KEY(supplyProductID) REFERENCES tblProducts(productID)
     )""")
@@ -519,7 +521,30 @@ c.execute("""CREATE TABLE tblInterBranchSupply (
         FOREIGN KEY(interBranchSupplyingBranchID) REFERENCES tblBranches(branchID),
         FOREIGN KEY(interBranchSupplyProductID) REFERENCES tblProducts(productID),
         FOREIGN KEY(mainSupplyStockID) REFERENCES tblMainSupplyStock(supplyID)
-    )""")'''
+    )""")
+
+#commit our command
+conn.commit()
+
+
+# 22 TBLRETURNEDFUEL
+#Delete table tblReturnedFuel if it exists
+c.execute("""DROP TABLE IF EXISTS tblReturnedFuel""")
+
+#commit our command
+conn.commit()'''
+
+#Create table tblInterBranchSupply 
+c.execute("""CREATE TABLE tblReturnedFuel (
+        returnedFuelID integer PRIMARY KEY,
+        returnedFuelDate date,
+        returnedFuelBranchID integer,
+        returnedFuelProductID integer,
+        returnedFuelPumpID,
+        returnedFuelLiters real,
+        FOREIGN KEY(returnedFuelBranchID) REFERENCES tblBranches(branchID),
+        FOREIGN KEY(returnedFuelProductID) REFERENCES tblProducts(productID)        
+    )""")
 
 #commit our command
 conn.commit()
@@ -527,4 +552,3 @@ conn.commit()
 #terminate the connection
 conn.close()
 
-# Need to add a table for returned fuel. It should include:ID, DATE, BRANCHID, PRODUCTID, LITRES, PUMPID
