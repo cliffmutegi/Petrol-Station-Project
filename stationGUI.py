@@ -246,6 +246,63 @@ def branchFtn():
         pump3_pms_editor_branch1.delete(0, END)
         pump3_ago_editor_branch1.delete(0, END)
     
+    
+    # Creating fuelReturnedFtn function
+    def fuelReturnedBranch1Ftn():
+        # EDITOR_FUEL_RETURNED_BRANCH1 WINDOW
+
+        # Creating a new window advance payments
+        global editor_fuel_returned_branch1 #need it to be global so that we can use editor.destroy 
+        editor_fuel_returned_branch1 = Tk() #this is the main window its also the first line to put when working with tkinter
+        editor_fuel_returned_branch1.title('Amorsage Place') #this is the title of the window
+        editor_fuel_returned_branch1.geometry("400x260") #specifying the size of the root window
+
+        # Creating restockSubmit function
+        def fuelReturnedSubmitFtn():
+            return
+    
+        # Creating restockCancel function
+        def fuelReturnedCancelFtn():
+            fuel_returned_pms_branch1.delete(0, END)
+            fuel_returned_ago_branch1.delete(0, END)
+            
+        
+        # Creating labels
+        
+        fuel_returned_pms_label = Label(editor_fuel_returned_branch1, text="PMS")
+        fuel_returned_pms_label.grid(row=1, column=0, pady=5, columnspan=2)
+        fuel_returned_pump_number_label = Label(editor_fuel_returned_branch1, text="Pump No.")
+        fuel_returned_pump_number_label.grid(row=2, column=0)
+        fuel_returned_liter_pms_label = Label(editor_fuel_returned_branch1, text="Liters")
+        fuel_returned_liter_pms_label.grid(row=3, column=0)
+
+        fuel_returned_pms_label = Label(editor_fuel_returned_branch1, text="AGO")
+        fuel_returned_pms_label.grid(row=4, column=0, columnspan=2)
+        fuel_returned_pump_number_label = Label(editor_fuel_returned_branch1, text="Pump No.")
+        fuel_returned_pump_number_label.grid(row=5, column=0)
+        fuel_returned_liter_ago_label = Label(editor_fuel_returned_branch1, text="Liters")
+        fuel_returned_liter_ago_label.grid(row=6, column=0)
+   
+        # Creating text box
+        fuel_returned_pump_pms = Entry(editor_fuel_returned_branch1, width=30)
+        fuel_returned_pump_pms.grid(row=2, column=1)
+        fuel_returned_pms_branch1 = Entry(editor_fuel_returned_branch1, width=30)
+        fuel_returned_pms_branch1.grid(row=3, column=1)
+        
+
+        fuel_returned_pump_ago = Entry(editor_fuel_returned_branch1, width=30)
+        fuel_returned_pump_ago.grid(row=5, column=1)
+        fuel_returned_ago_branch1 = Entry(editor_fuel_returned_branch1, width=30)
+        fuel_returned_ago_branch1.grid(row=6, column=1)
+    
+        # Creating buttons for Fuel Returned
+        cancel_btn = Button(editor_fuel_returned_branch1, text="Cancel", command=fuelReturnedSubmitFtn)
+        cancel_btn.grid(row=7, column=0, pady=10, padx=(10,0), ipadx=40)
+
+        submit_btn = Button(editor_fuel_returned_branch1, text="Submit", command=fuelReturnedCancelFtn)
+        submit_btn.grid(row=7, column=1, pady=10, padx=(10,0), ipadx=60)
+
+
     # Creating restockSubmit function
     # For interbranch supply, I need a way to calculate the fuel used for a branch so that I can determine the mainStockSupplyID
     def restockingBranch1Ftn():
@@ -351,26 +408,27 @@ def branchFtn():
     date_label = Label(editor_branch1, text="Date")
     date_label.grid(row=0, column=0)
     branch_label = Label(editor_branch1, text="Place")
-    branch_label.grid(row=1, column=0)
+    branch_label.grid(row=0, column=2)
     pump1_label = Label(editor_branch1, text="Pump I")
-    pump1_label.grid(row=2, column=0, pady=(10,0))
-    pump2_label = Label(editor_branch1, text="Pump II")
-    pump2_label.grid(row=5, column=0)
-    pump3_label = Label(editor_branch1, text="Pump III")
-    pump3_label.grid(row=8, column=0)
-
+    pump1_label.grid(row=1, column=0, pady=(10,0), columnspan=2, ipadx=120)
     pump1_pms_label = Label(editor_branch1, text="PMS")
-    pump1_pms_label.grid(row=3, column=1)
+    pump1_pms_label.grid(row=2, column=0)
     pump1_ago_label = Label(editor_branch1, text="AGO")
-    pump1_ago_label.grid(row=4, column=1)
+    pump1_ago_label.grid(row=2, column=2)
+        
+    pump2_label = Label(editor_branch1, text="Pump II")
+    pump2_label.grid(row=3, column=0, columnspan=2, ipadx=120)
     pump2_pms_label = Label(editor_branch1, text="PMS")
-    pump2_pms_label.grid(row=6, column=1)
+    pump2_pms_label.grid(row=4, column=0)
     pump2_ago_label = Label(editor_branch1, text="AGO")
-    pump2_ago_label.grid(row=7, column=1)
+    pump2_ago_label.grid(row=4, column=2)
+
+    pump3_label = Label(editor_branch1, text="Pump III")
+    pump3_label.grid(row=5, column=0, columnspan=2, ipadx=120)    
     pump3_pms_label = Label(editor_branch1, text="PMS")
-    pump3_pms_label.grid(row=9, column=1)
+    pump3_pms_label.grid(row=6, column=0)
     pump3_ago_label = Label(editor_branch1, text="AGO")
-    pump3_ago_label.grid(row=10, column=1, pady=(0,10))
+    pump3_ago_label.grid(row=6, column=2)
 
     # Creating global variables for text box names
     global date_editor_branch1
@@ -387,92 +445,94 @@ def branchFtn():
 
     # Creating text boxes
     date_editor_branch1 = Entry(editor_branch1, width=30)
-    date_editor_branch1.grid(row=0, column=2, padx=20)
+    date_editor_branch1.grid(row=0, column=1, padx=20)
     branch_editor_branch1 = Entry(editor_branch1, width=30)
-    branch_editor_branch1.grid(row=1, column=2)
+    branch_editor_branch1.grid(row=0, column=3)
     branch_editor_branch1.insert(0, str(clicked.get())) #this inserts the clicked branch into the text box
     branch_editor_branch1.config(state="disabled") #this prevents users from changing this value
 
     pump1_editor_branch1 = Entry(editor_branch1, width=30)
-    pump1_editor_branch1.grid(row=2, column=2, pady=(10,0))
+    pump1_editor_branch1.grid(row=1, column=2, pady=(10,0), columnspan=2, ipadx=90)
     pump1_editor_branch1.insert(0, str(1)) #this inserts the pump no. "1" into the text box
     pump1_editor_branch1.config(state="disabled") #this prevents users from changing this value
     pump1_pms_editor_branch1 = Entry(editor_branch1, width=30)
-    pump1_pms_editor_branch1.grid(row=3, column=2)
+    pump1_pms_editor_branch1.grid(row=2, column=1)
     pump1_ago_editor_branch1 = Entry(editor_branch1, width=30)
-    pump1_ago_editor_branch1.grid(row=4, column=2)
+    pump1_ago_editor_branch1.grid(row=2, column=3)
 
     pump2_editor_branch1 = Entry(editor_branch1, width=30)
-    pump2_editor_branch1.grid(row=5, column=2)
+    pump2_editor_branch1.grid(row=3, column=2, columnspan=2, ipadx=90)
     pump2_editor_branch1.insert(0, str(2)) #this inserts the pump no. "2" into the text box
     pump2_editor_branch1.config(state="disabled") #this prevents users from changing this value
     pump2_pms_editor_branch1 = Entry(editor_branch1, width=30)
-    pump2_pms_editor_branch1.grid(row=6, column=2)
+    pump2_pms_editor_branch1.grid(row=4, column=1)
     pump2_ago_editor_branch1 = Entry(editor_branch1, width=30)
-    pump2_ago_editor_branch1.grid(row=7, column=2)
+    pump2_ago_editor_branch1.grid(row=4, column=3)
 
     pump3_editor_branch1 = Entry(editor_branch1, width=30)
-    pump3_editor_branch1.grid(row=8, column=2)
+    pump3_editor_branch1.grid(row=5, column=2, columnspan=2, ipadx=90)
     pump3_editor_branch1.insert(0, str(3)) #this inserts the pump no. "3" into the text box
     pump3_editor_branch1.config(state="disabled") #this prevents users from changing this value
     pump3_pms_editor_branch1 = Entry(editor_branch1, width=30)
-    pump3_pms_editor_branch1.grid(row=9, column=2)
+    pump3_pms_editor_branch1.grid(row=6, column=1)
     pump3_ago_editor_branch1 = Entry(editor_branch1, width=30)
-    pump3_ago_editor_branch1.grid(row=10, column=2, pady=(0,10))
+    pump3_ago_editor_branch1.grid(row=6, column=3)
 
     # Creating buttons for Index
     index_cancel_btn = Button(editor_branch1, text="Cancel", command=indexCancelFtn)
-    index_cancel_btn.grid(row=11, column=1, pady=10, padx=(0,5), ipadx=50)
+    index_cancel_btn.grid(row=7, column=1, pady=10, padx=(0,5), ipadx=50)
 
     index_submit_btn = Button(editor_branch1, text="Submit", command=indexSubmitFtn)
-    index_submit_btn.grid(row=11, column=2, pady=10, padx=(5,0), ipadx=60)
+    index_submit_btn.grid(row=7, column=2, pady=10, padx=(5,0), ipadx=60)
 
     
     # CREATING FUEL RETURNED / AMORSAGE
     
-    # Creating labels
-    fuel_returned_pms_label = Label(editor_branch1, text="Amorsage")
-    fuel_returned_pms_label.grid(row=12, column=0, pady=5, columnspan=4)
-    fuel_returned_pms_label = Label(editor_branch1, text="PMS")
-    fuel_returned_pms_label.grid(row=13, column=0, pady=5)
-    fuel_returned_pms_label = Label(editor_branch1, text="AGO")
-    fuel_returned_pms_label.grid(row=13, column=2, pady=5)
-
-    # Creating global variable
+    # Creating global variables for text box names (will be used to store and display total returned fuel)
     global fuel_returned_pms_branch1
     global fuel_returned_ago_branch1
 
     fuel_returned_pms_branch1 = 0
     fuel_returned_ago_branch1 = 0
-
-    # Creating text box
-    fuel_returned_pms_branch1 = Entry(editor_branch1, width=30)
-    fuel_returned_pms_branch1.grid(row=13, column=1)
-    fuel_returned_ago_branch1 = Entry(editor_branch1, width=30)
-    fuel_returned_ago_branch1.grid(row=13, column=3)
-
     
+    # Creating a button to launch the restocking window 
+    fuel_returned_branch1_btn = Button(editor_branch1, text="Amorsage", command=fuelReturnedBranch1Ftn)
+    fuel_returned_branch1_btn.grid(row=8,column=0, columnspan=4, pady=10, padx=5, ipadx=315)
+
+    # Creating Fuel Returned Total (L) labels
+    fuel_returned_label = Label(editor_branch1, text="Total (L) PMS")
+    fuel_returned_label.grid(row=9, column=0, pady=5)
+    fuel_returned_pms_label = Label(editor_branch1, text=fuel_returned_pms_branch1, borderwidth=3, relief="sunken")
+    fuel_returned_pms_label.grid(row=9, column=1, ipadx=87)
+
+    fuel_returned_label = Label(editor_branch1, text="Total (L) AGO")
+    fuel_returned_label.grid(row=9, column=2)
+    fuel_returned_ago_label = Label(editor_branch1, text=fuel_returned_ago_branch1, borderwidth=3, relief="sunken")
+    fuel_returned_ago_label.grid(row=9, column=3, ipadx=87)
+    
+        
     # CREATING TOTAL SALES 
 
-    #creating global variables for total sales
+    # Creating global variables for total sales
     global day_sale_liters_pms_branch1
     global day_sale_liters_ago_branch1
 
     day_sale_liters_pms_branch1 = 0
     day_sale_liters_ago_branch1 = 0
 
+    # Creating total sales labels
     total_sales_label = Label(editor_branch1, text="Total Sales (Liters)")
-    total_sales_label.grid(row=14, column=0, pady=5, columnspan=4)
+    total_sales_label.grid(row=10, column=0, pady=10, columnspan=4)
 
     total_sales_pms_label = Label(editor_branch1, text="PMS")
-    total_sales_pms_label.grid(row=15, column=0, padx=10, pady=5)
+    total_sales_pms_label.grid(row=11, column=0, padx=10, pady=5)
     total_sales_ago_label = Label(editor_branch1, text="AGO")
-    total_sales_ago_label.grid(row=15, column=2, padx=10)
+    total_sales_ago_label.grid(row=11, column=2, padx=10)
 
     total_sales_result_pms_label = Label(editor_branch1, text=day_sale_liters_pms_branch1, borderwidth=3, relief="sunken")
-    total_sales_result_pms_label.grid(row=15, column=1, padx=20, ipadx=87)
+    total_sales_result_pms_label.grid(row=11, column=1, padx=20, ipadx=87)
     total_sales_result_ago_label = Label(editor_branch1, text=day_sale_liters_ago_branch1, borderwidth=3, relief="sunken")
-    total_sales_result_ago_label.grid(row=15, column=3, padx=20, ipadx=87)
+    total_sales_result_ago_label.grid(row=11, column=3, padx=20, ipadx=87)
 
     # RESTOCKING / DECHARGEMENT
     
@@ -482,29 +542,30 @@ def branchFtn():
 
     total_restock_liters_pms_branch1 = 0
     total_restock_liters_ago_branch1 = 0
+    
     # Creating a button to launch the restocking window 
     restocking_branch1_btn = Button(editor_branch1, text="Dechargement", command=restockingBranch1Ftn)
-    restocking_branch1_btn.grid(row=16,column=0, columnspan=4, pady=10, padx=5, ipadx=315)
+    restocking_branch1_btn.grid(row=12,column=0, columnspan=4, pady=10, padx=5, ipadx=310)
 
     # Creating Total (L) labels
     restock_total_label = Label(editor_branch1, text="Total (L) PMS")
-    restock_total_label.grid(row=17, column=0, pady=5)
+    restock_total_label.grid(row=13, column=0, pady=5)
     restock_total_pms_label = Label(editor_branch1, text=total_restock_liters_pms_branch1, borderwidth=3, relief="sunken")
-    restock_total_pms_label.grid(row=17, column=1, ipadx=87)
+    restock_total_pms_label.grid(row=13, column=1, ipadx=87)
 
     restock_total_label = Label(editor_branch1, text="Total (L) AGO")
-    restock_total_label.grid(row=17, column=2)
+    restock_total_label.grid(row=13, column=2)
     restock_total_ago_label = Label(editor_branch1, text=total_restock_liters_ago_branch1, borderwidth=3, relief="sunken")
-    restock_total_ago_label.grid(row=17, column=3, ipadx=87)
+    restock_total_ago_label.grid(row=13, column=3, ipadx=87)
 
     # payments
     
     #Creating buttons to launch the advanced and debt payments windows
     advance_payment_btn = Button(editor_branch1, text="Advance Payments", command=advancePaymentFtn)
-    advance_payment_btn.grid(row=18,column=0, columnspan=4, pady=15, padx=5, ipadx=300)
+    advance_payment_btn.grid(row=14,column=0, columnspan=4, pady=15, padx=5, ipadx=300)
 
     debt_payment_btn = Button(editor_branch1, text="Debt Payments", command=debtPaymentFtn)
-    debt_payment_btn.grid(row=19,column=0, columnspan=4, pady=5, padx=5, ipadx=310)
+    debt_payment_btn.grid(row=15,column=0, columnspan=4, pady=5, padx=5, ipadx=310)
 
 
 #a Tkinter variable
