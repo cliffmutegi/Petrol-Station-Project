@@ -281,21 +281,64 @@ def branchFtn():
             total_sales_result_ago_label.config(text=day_sale_liters_ago_branch1)
 
             # Updating the database
-            c.execute("INSERT INTO tblIndexes VALUES (:returnedFuelID, :returnedFuelDate, :returnedFuelBranchID, :returnedFuelProductID, :returnedFuelPumpID, :returnedFuelLiters)",
-            {
-                'returnedFuelID': LastReturnedFuelIDBranch1 + 1,
-                'returnedFuelDate': currentDateBranch1,
-                'returnedFuelBranchID': 1,
-                'returnedFuelProductID': 1,
-                'returnedFuelPumpID': pump3_editor_branch1.get(),
-                'returnedFuelLiters': ClosingIndexesLstBranch1[0]
-            })
+            # Using a while statement to loop through until we fill all entries i.e. pms and ago
+            # Using an if/else statement to allow the correct identification of the product 
+            entries = 2
+            while entries > 0:
+                if fuel_returned_pump_pms.get() != "": #means we have an entry in the pms section
+                    
+                    LastReturnedFuelIDBranch1 = LastReturnedFuelIDBranch1 + 1 #adds one to the last returnedFuelID
 
-            # Commit changes
-            conn.commit()
+                    c.execute("INSERT INTO tblIndexes VALUES (:returnedFuelID, :returnedFuelDate, :returnedFuelBranchID, :returnedFuelProductID, :returnedFuelPumpID, :returnedFuelLiters)",
+                        {
+                            'returnedFuelID': LastReturnedFuelIDBranch1,
+                            'returnedFuelDate': currentDateBranch1,
+                            'returnedFuelBranchID': 1,
+                            'returnedFuelProductID': 1,
+                            'returnedFuelPumpID': fuel_returned_pump_pms.get(),
+                            'returnedFuelLiters': fuel_returned_pms_branch1.get()
+                        })
 
-            # Close connection
-            conn.close()
+                    # Commit changes
+                    conn.commit()
+
+                    # Close connection
+                    conn.close()
+
+                    entries -= 1
+                
+                elif fuel_returned_pump_pms.get() == "": #means we don't have an entry in the pms section
+                    entries -= 1
+                    pass
+
+                elif fuel_returned_pump_ago.get() != "": #means there is an entry in the ago section
+
+                    LastReturnedFuelIDBranch1 = LastReturnedFuelIDBranch1 + 1 #adds one to the last returnedFuelID
+
+                    c.execute("INSERT INTO tblIndexes VALUES (:returnedFuelID, :returnedFuelDate, :returnedFuelBranchID, :returnedFuelProductID, :returnedFuelPumpID, :returnedFuelLiters)",
+                        {
+                            'returnedFuelID': LastReturnedFuelIDBranch1,
+                            'returnedFuelDate': currentDateBranch1,
+                            'returnedFuelBranchID': 1,
+                            'returnedFuelProductID': 2,
+                            'returnedFuelPumpID': fuel_returned_pump_ago.get(),
+                            'returnedFuelLiters': fuel_returned_ago_branch1.get()
+                        })
+
+                    # Commit changes
+                    conn.commit()
+
+                    # Close connection
+                    conn.close()
+
+                    entries -= 1
+
+                else: #means there is no entry  in the ago section
+                    entries -= 1
+                    pass
+
+
+
         
         # Creating fuelReturnedCancel function
         def fuelReturnedCancelFtn():
