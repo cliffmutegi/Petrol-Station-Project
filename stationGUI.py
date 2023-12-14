@@ -257,13 +257,15 @@ def branchFtn():
         editor_fuel_returned_branch1.title('Amorsage Place') #this is the title of the window
         editor_fuel_returned_branch1.geometry("400x260") #specifying the size of the root window
 
-        # Creating restockSubmit function
+        # Creating fuelReturnedSubmit function
         def fuelReturnedSubmitFtn():
             return
     
-        # Creating restockCancel function
+        # Creating fuelReturnedCancel function
         def fuelReturnedCancelFtn():
+            fuel_returned_pump_pms.delete(0, END)
             fuel_returned_pms_branch1.delete(0, END)
+            fuel_returned_pump_ago.delete(0, END)
             fuel_returned_ago_branch1.delete(0, END)
             
         
@@ -296,11 +298,43 @@ def branchFtn():
         fuel_returned_ago_branch1.grid(row=6, column=1)
     
         # Creating buttons for Fuel Returned
-        cancel_btn = Button(editor_fuel_returned_branch1, text="Cancel", command=fuelReturnedSubmitFtn)
+        cancel_btn = Button(editor_fuel_returned_branch1, text="Cancel", command=fuelReturnedCancelFtn)
         cancel_btn.grid(row=7, column=0, pady=10, padx=(10,0), ipadx=40)
 
-        submit_btn = Button(editor_fuel_returned_branch1, text="Submit", command=fuelReturnedCancelFtn)
+        submit_btn = Button(editor_fuel_returned_branch1, text="Submit", command=fuelReturnedSubmitFtn)
         submit_btn.grid(row=7, column=1, pady=10, padx=(10,0), ipadx=60)
+
+
+        # Retrieving and saving the previous fuel returned ID
+    
+        # Creating a database or connect to one
+        conn = sqlite3.connect('petrolstation.db')
+
+        # Create a cursor
+        c = conn.cursor()
+        
+        c.execute("SELECT *, oid FROM tblReturnedFuel WHERE returnedFuelDate IN (SELECT MAX(returnedFuelDate) FROM tblIndexes)") #oid means include the default primary key. MAX(returnedFuelDate) ensures we only return results from the last date entered
+        returnedFuelRecords = c.fetchall() #this will store all the records
+        print("Printing returnedFuelRecords: ", returnedFuelRecords) #this will print the records in the terminal
+
+        # Declare and initialize global variables
+        global LastReturnedFuelIDBranch1
+
+        LastReturnedFuelIDBranch1 = 0
+        
+        # Retrieving closing indexes and assigning them to branch1ClosingIndexesLst
+        for record in returnedFuelRecords:
+            id = record[0]
+            LastReturnedFuelIDBranch1 = id
+            
+        print("Last ReturnedFuelID: ", LastReturnedFuelIDBranch1)
+
+        
+        # Commit changes
+        conn.commit()
+
+        # Close connection
+        conn.close()
 
 
     # Creating restockSubmit function
@@ -407,7 +441,7 @@ def branchFtn():
     # Creating Labels
     date_label = Label(editor_branch1, text="Date")
     date_label.grid(row=0, column=0)
-    branch_label = Label(editor_branch1, text="Place")
+    branch_label = Label(editor_branch1, text="Branch")
     branch_label.grid(row=0, column=2)
     pump1_label = Label(editor_branch1, text="Pump I")
     pump1_label.grid(row=1, column=0, pady=(10,0), columnspan=2, ipadx=120)
