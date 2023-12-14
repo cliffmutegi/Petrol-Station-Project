@@ -92,6 +92,14 @@ def branchFtn():
     # Creating submit function
     def indexSubmitFtn():
         global LastIndexID_branch1
+        global total_day_pms_liters_branch1
+        global total_day_ago_liters_branch1
+        global currentDateBranch1
+        global currentBranchIDBranch1
+
+        currentDateBranch1 = ""
+        currentBranchIDBranch1 = 
+
         LastIndexID_branch1 = LastIndexIDBranch1
         # Creating a database or connect to one
         conn = sqlite3.connect('petrolstation.db')
@@ -107,6 +115,8 @@ def branchFtn():
         total_day_pms_liters_branch1 = 0 #this variable will be used in calculating the total pms liters sold for a particular day
         total_day_ago_liters_branch1 = 0 #this variable will be used in calculating the total ago liters sold for a particular day
         
+        currentDateBranch1 = date_editor_branch1.get()
+
         while len(ClosingIndexesLstBranch1) > 0: #this ensures that all the indexes are uploaded to the tblIndexes
             if len(ClosingIndexesLstBranch1) == 6:
                 LastIndexID_branch1 += 1
@@ -218,23 +228,16 @@ def branchFtn():
         pump3_pms_editor_branch1.delete(0, END)
         pump3_ago_editor_branch1.delete(0, END)
 
-        # Declaring and initializing global variables and assigning them fuel returned from the returned fuel text box
-        global total_fuel_returned_pms_branch1
-        global total_fuel_returned_ago_branch1
-
-        total_fuel_returned_pms_branch1 = 0
-        total_fuel_returned_ago_branch1 = 0
-
-        total_fuel_returned_pms_branch1 = fuel_returned_pms_branch1.get()
-        total_fuel_returned_ago_branch1 = fuel_returned_ago_branch1.get()
-
-        # updating variables used in displaying the total pms and ago sales liters when factoring total returned fuel
-        day_sale_liters_pms_branch1 = total_day_pms_liters_branch1 - total_fuel_returned_pms_branch1
-        day_sale_liters_ago_branch1 = total_day_ago_liters_branch1 - total_fuel_returned_ago_branch1
+       
+        # updating variables used in displaying the total pms and ago sales liters 
+        day_sale_liters_pms_branch1 = total_day_pms_liters_branch1 
+        day_sale_liters_ago_branch1 = total_day_ago_liters_branch1 
 
         # updating the total sales labels to update with the new values
         total_sales_result_pms_label.config(text=day_sale_liters_pms_branch1)
         total_sales_result_ago_label.config(text=day_sale_liters_ago_branch1)
+
+        
 
     # Creating indexCancelFtn function
     def indexCancelFtn():
@@ -259,8 +262,41 @@ def branchFtn():
 
         # Creating fuelReturnedSubmit function
         def fuelReturnedSubmitFtn():
-            return
-    
+             # Declaring and initializing global variables and assigning them fuel returned from the returned fuel text box
+            global total_fuel_returned_pms_branch1
+            global total_fuel_returned_ago_branch1
+
+            total_fuel_returned_pms_branch1 = 0
+            total_fuel_returned_ago_branch1 = 0
+
+            total_fuel_returned_pms_branch1 = fuel_returned_pms_branch1.get()
+            total_fuel_returned_ago_branch1 = fuel_returned_ago_branch1.get()
+
+            # updating variables used in displaying the total pms and ago sales liters when factoring total returned fuel
+            day_sale_liters_pms_branch1 = total_day_pms_liters_branch1 - total_fuel_returned_pms_branch1
+            day_sale_liters_ago_branch1 = total_day_ago_liters_branch1 - total_fuel_returned_ago_branch1
+        
+            # updating the total sales labels to update with the new values
+            total_sales_result_pms_label.config(text=day_sale_liters_pms_branch1)
+            total_sales_result_ago_label.config(text=day_sale_liters_ago_branch1)
+
+            # Updating the database
+            c.execute("INSERT INTO tblIndexes VALUES (:returnedFuelID, :returnedFuelDate, :returnedFuelBranchID, :returnedFuelProductID, :returnedFuelPumpID, :returnedFuelLiters)",
+            {
+                'returnedFuelID': LastReturnedFuelIDBranch1 + 1,
+                'returnedFuelDate': currentDateBranch1,
+                'returnedFuelBranchID': 1,
+                'returnedFuelProductID': 1,
+                'returnedFuelPumpID': pump3_editor_branch1.get(),
+                'returnedFuelLiters': ClosingIndexesLstBranch1[0]
+            })
+
+            # Commit changes
+            conn.commit()
+
+            # Close connection
+            conn.close()
+        
         # Creating fuelReturnedCancel function
         def fuelReturnedCancelFtn():
             fuel_returned_pump_pms.delete(0, END)
@@ -313,7 +349,7 @@ def branchFtn():
         # Create a cursor
         c = conn.cursor()
         
-        c.execute("SELECT *, oid FROM tblReturnedFuel WHERE returnedFuelDate IN (SELECT MAX(returnedFuelDate) FROM tblIndexes)") #oid means include the default primary key. MAX(returnedFuelDate) ensures we only return results from the last date entered
+        c.execute("SELECT *, oid FROM tblReturnedFuel WHERE returnedFuelID IN (SELECT MAX(returnedFuelID) FROM tblReturnedFuel)") #oid means include the default primary key. MAX(returnedFuelID) ensures we only return results from the last id entered
         returnedFuelRecords = c.fetchall() #this will store all the records
         print("Printing returnedFuelRecords: ", returnedFuelRecords) #this will print the records in the terminal
 
@@ -322,12 +358,12 @@ def branchFtn():
 
         LastReturnedFuelIDBranch1 = 0
         
-        # Retrieving closing indexes and assigning them to branch1ClosingIndexesLst
+        # Retrieving last index and assigning it to LastReturnedFuelIDBranch1
         for record in returnedFuelRecords:
             id = record[0]
             LastReturnedFuelIDBranch1 = id
             
-        print("Last ReturnedFuelID: ", LastReturnedFuelIDBranch1)
+        #print("Last ReturnedFuelID: ", LastReturnedFuelIDBranch1)
 
         
         # Commit changes

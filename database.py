@@ -532,15 +532,15 @@ conn.commit()
 c.execute("""DROP TABLE IF EXISTS tblReturnedFuel""")
 
 #commit our command
-conn.commit()'''
+conn.commit()
 
-#Create table tblInterBranchSupply 
+#Create table tblReturnedFuel 
 c.execute("""CREATE TABLE tblReturnedFuel (
         returnedFuelID integer PRIMARY KEY,
         returnedFuelDate date,
         returnedFuelBranchID integer,
         returnedFuelProductID integer,
-        returnedFuelPumpID,
+        returnedFuelPumpID integer,
         returnedFuelLiters real,
         FOREIGN KEY(returnedFuelBranchID) REFERENCES tblBranches(branchID),
         FOREIGN KEY(returnedFuelProductID) REFERENCES tblProducts(productID)        
@@ -548,7 +548,7 @@ c.execute("""CREATE TABLE tblReturnedFuel (
 
 #commit our command
 conn.commit()
-
+'''
 #terminate the connection
 conn.close()
 
