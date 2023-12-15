@@ -98,7 +98,7 @@ def branchFtn():
         global currentBranchIDBranch1
 
         currentDateBranch1 = ""
-        currentBranchIDBranch1 = 
+        currentBranchIDBranch1 = 1
 
         LastIndexID_branch1 = LastIndexIDBranch1
         # Creating a database or connect to one
@@ -260,38 +260,71 @@ def branchFtn():
         editor_fuel_returned_branch1.title('Amorsage Place') #this is the title of the window
         editor_fuel_returned_branch1.geometry("400x260") #specifying the size of the root window
 
+        
+        # Retrieving and saving the previous fuel returned ID
+    
+        # Creating a database or connect to one
+        conn = sqlite3.connect('petrolstation.db')
+
+        # Create a cursor
+        c = conn.cursor()
+        
+        c.execute("SELECT *, oid FROM tblReturnedFuel WHERE returnedFuelID IN (SELECT MAX(returnedFuelID) FROM tblReturnedFuel)") #oid means include the default primary key. MAX(returnedFuelID) ensures we only return results from the last id entered
+        returnedFuelRecords = c.fetchall() #this will store all the records
+        #print("Printing returnedFuelRecords: ", returnedFuelRecords) #this will print the records in the terminal
+
+        # Declare and initialize global variables
+        global LastReturnedFuelIDBranch1
+
+        LastReturnedFuelIDBranch1 = 0
+        
+        # Retrieving last index and assigning it to LastReturnedFuelIDBranch1
+        for record in returnedFuelRecords:
+            id = record[0]
+            LastReturnedFuelIDBranch1 = id
+            
+        #print("Last ReturnedFuelID: ", LastReturnedFuelIDBranch1)
+        
+        # Commit changes
+        conn.commit()
+
+        # Close connection
+        conn.close()
+
+        
         # Creating fuelReturnedSubmit function
         def fuelReturnedSubmitFtn():
              # Declaring and initializing global variables and assigning them fuel returned from the returned fuel text box
             global total_fuel_returned_pms_branch1
             global total_fuel_returned_ago_branch1
+            global currentLastReturnedFuelID
+
+            currentLastReturnedFuelID = LastReturnedFuelIDBranch1
 
             total_fuel_returned_pms_branch1 = 0
             total_fuel_returned_ago_branch1 = 0
 
-            total_fuel_returned_pms_branch1 = fuel_returned_pms_branch1.get()
-            total_fuel_returned_ago_branch1 = fuel_returned_ago_branch1.get()
-
-            # updating variables used in displaying the total pms and ago sales liters when factoring total returned fuel
-            day_sale_liters_pms_branch1 = total_day_pms_liters_branch1 - total_fuel_returned_pms_branch1
-            day_sale_liters_ago_branch1 = total_day_ago_liters_branch1 - total_fuel_returned_ago_branch1
-        
-            # updating the total sales labels to update with the new values
-            total_sales_result_pms_label.config(text=day_sale_liters_pms_branch1)
-            total_sales_result_ago_label.config(text=day_sale_liters_ago_branch1)
-
+                        
             # Updating the database
             # Using a while statement to loop through until we fill all entries i.e. pms and ago
             # Using an if/else statement to allow the correct identification of the product 
             entries = 2
             while entries > 0:
                 if fuel_returned_pump_pms.get() != "": #means we have an entry in the pms section
+                    #print("Lastreturned fuel before: ",currentLastReturnedFuelID)
+                    currentLastReturnedFuelID += 1 #adds one to the last returnedFuelID
+                    #print("Lastreturned After: ", currentLastReturnedFuelID)
                     
-                    LastReturnedFuelIDBranch1 = LastReturnedFuelIDBranch1 + 1 #adds one to the last returnedFuelID
+                    # Creating a database or connect to one
+                    conn = sqlite3.connect('petrolstation.db')
 
-                    c.execute("INSERT INTO tblIndexes VALUES (:returnedFuelID, :returnedFuelDate, :returnedFuelBranchID, :returnedFuelProductID, :returnedFuelPumpID, :returnedFuelLiters)",
+                    # Create a cursor
+                    c = conn.cursor()
+                    
+                    # Updating the tblReturnedFuel table                    
+                    c.execute("INSERT INTO tblReturnedFuel VALUES (:returnedFuelID, :returnedFuelDate, :returnedFuelBranchID, :returnedFuelProductID, :returnedFuelPumpID, :returnedFuelLiters)",
                         {
-                            'returnedFuelID': LastReturnedFuelIDBranch1,
+                            'returnedFuelID': currentLastReturnedFuelID,
                             'returnedFuelDate': currentDateBranch1,
                             'returnedFuelBranchID': 1,
                             'returnedFuelProductID': 1,
@@ -313,11 +346,18 @@ def branchFtn():
 
                 elif fuel_returned_pump_ago.get() != "": #means there is an entry in the ago section
 
-                    LastReturnedFuelIDBranch1 = LastReturnedFuelIDBranch1 + 1 #adds one to the last returnedFuelID
+                    currentLastReturnedFuelID += 1 #adds one to the last returnedFuelID
 
-                    c.execute("INSERT INTO tblIndexes VALUES (:returnedFuelID, :returnedFuelDate, :returnedFuelBranchID, :returnedFuelProductID, :returnedFuelPumpID, :returnedFuelLiters)",
+                    # Creating a database or connect to one
+                    conn = sqlite3.connect('petrolstation.db')
+
+                    # Create a cursor
+                    c = conn.cursor()
+                    
+                    # Updating the tblReturnedFuel table                      
+                    c.execute("INSERT INTO tblReturnedFuel VALUES (:returnedFuelID, :returnedFuelDate, :returnedFuelBranchID, :returnedFuelProductID, :returnedFuelPumpID, :returnedFuelLiters)",
                         {
-                            'returnedFuelID': LastReturnedFuelIDBranch1,
+                            'returnedFuelID': currentLastReturnedFuelID,
                             'returnedFuelDate': currentDateBranch1,
                             'returnedFuelBranchID': 1,
                             'returnedFuelProductID': 2,
@@ -336,8 +376,31 @@ def branchFtn():
                 else: #means there is no entry  in the ago section
                     entries -= 1
                     pass
+            
+                        
+            # Updating the total returned fuel label to show the actual returned fuel
+            total_fuel_returned_pms_branch1 = float(fuel_returned_pms_branch1.get())
+            total_fuel_returned_ago_branch1 = float(fuel_returned_ago_branch1.get())
 
-
+            global cummulative_fuel_returned_pms_branch1
+            global cummulative_fuel_returned_ago_branch1 
+            
+            cummulative_fuel_returned_pms_branch1 += total_fuel_returned_pms_branch1
+            cummulative_fuel_returned_ago_branch1 += total_fuel_returned_ago_branch1
+                        
+            fuel_returned_pms_label.config(text=cummulative_fuel_returned_pms_branch1)   
+            fuel_returned_ago_label.config(text=cummulative_fuel_returned_ago_branch1)
+            
+            # updating variables used in displaying the total pms and ago sales liters when factoring total returned fuel
+            day_sale_liters_pms_branch1 = total_day_pms_liters_branch1 - cummulative_fuel_returned_pms_branch1
+            day_sale_liters_ago_branch1 = total_day_ago_liters_branch1 - cummulative_fuel_returned_ago_branch1
+        
+            # updating the total sales labels to update with the new values
+            total_sales_result_pms_label.config(text=day_sale_liters_pms_branch1)
+            total_sales_result_ago_label.config(text=day_sale_liters_ago_branch1)
+            
+            # Exiting the returned fuel window
+            editor_fuel_returned_branch1.destroy()
 
         
         # Creating fuelReturnedCancel function
@@ -384,36 +447,7 @@ def branchFtn():
         submit_btn.grid(row=7, column=1, pady=10, padx=(10,0), ipadx=60)
 
 
-        # Retrieving and saving the previous fuel returned ID
-    
-        # Creating a database or connect to one
-        conn = sqlite3.connect('petrolstation.db')
-
-        # Create a cursor
-        c = conn.cursor()
         
-        c.execute("SELECT *, oid FROM tblReturnedFuel WHERE returnedFuelID IN (SELECT MAX(returnedFuelID) FROM tblReturnedFuel)") #oid means include the default primary key. MAX(returnedFuelID) ensures we only return results from the last id entered
-        returnedFuelRecords = c.fetchall() #this will store all the records
-        print("Printing returnedFuelRecords: ", returnedFuelRecords) #this will print the records in the terminal
-
-        # Declare and initialize global variables
-        global LastReturnedFuelIDBranch1
-
-        LastReturnedFuelIDBranch1 = 0
-        
-        # Retrieving last index and assigning it to LastReturnedFuelIDBranch1
-        for record in returnedFuelRecords:
-            id = record[0]
-            LastReturnedFuelIDBranch1 = id
-            
-        #print("Last ReturnedFuelID: ", LastReturnedFuelIDBranch1)
-
-        
-        # Commit changes
-        conn.commit()
-
-        # Close connection
-        conn.close()
 
 
     # Creating restockSubmit function
@@ -604,9 +638,15 @@ def branchFtn():
     # Creating global variables for text box names (will be used to store and display total returned fuel)
     global fuel_returned_pms_branch1
     global fuel_returned_ago_branch1
+    global cummulative_fuel_returned_pms_branch1 #used in calculating the cummulative returned fuel especially where multiple pumps in a branch have returned fuel
+    global cummulative_fuel_returned_ago_branch1 #used in calculating the cummulative returned fuel especially where multiple pumps in a branch have returned fuel
 
     fuel_returned_pms_branch1 = 0
     fuel_returned_ago_branch1 = 0
+
+    cummulative_fuel_returned_pms_branch1 = 0
+    cummulative_fuel_returned_ago_branch1 = 0
+
     
     # Creating a button to launch the restocking window 
     fuel_returned_branch1_btn = Button(editor_branch1, text="Amorsage", command=fuelReturnedBranch1Ftn)
