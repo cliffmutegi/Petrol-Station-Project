@@ -308,79 +308,107 @@ def branchFtn():
             # Updating the database
             # Using a while statement to loop through until we fill all entries i.e. pms and ago
             # Using an if/else statement to allow the correct identification of the product 
-            entries = 2
+            entries = 4
             while entries > 0:
-                if fuel_returned_pump_pms.get() != "": #means we have an entry in the pms section
-                    #print("Lastreturned fuel before: ",currentLastReturnedFuelID)
-                    currentLastReturnedFuelID += 1 #adds one to the last returnedFuelID
-                    #print("Lastreturned After: ", currentLastReturnedFuelID)
-                    
-                    # Creating a database or connect to one
-                    conn = sqlite3.connect('petrolstation.db')
-
-                    # Create a cursor
-                    c = conn.cursor()
-                    
-                    # Updating the tblReturnedFuel table                    
-                    c.execute("INSERT INTO tblReturnedFuel VALUES (:returnedFuelID, :returnedFuelDate, :returnedFuelBranchID, :returnedFuelProductID, :returnedFuelPumpID, :returnedFuelLiters)",
-                        {
-                            'returnedFuelID': currentLastReturnedFuelID,
-                            'returnedFuelDate': currentDateBranch1,
-                            'returnedFuelBranchID': 1,
-                            'returnedFuelProductID': 1,
-                            'returnedFuelPumpID': fuel_returned_pump_pms.get(),
-                            'returnedFuelLiters': fuel_returned_pms_branch1.get()
-                        })
-
-                    # Commit changes
-                    conn.commit()
-
-                    # Close connection
-                    conn.close()
-
+                if entries == 4:
+                    #print("Entries before: ", entries)
                     entries -= 1
+                    #print("Entries after: ", entries)
+
+                    if fuel_returned_pump_pms.get() != "": #means we have an entry in the pms section
+                        #print("Lastreturned fuel before: ",currentLastReturnedFuelID)
+                        currentLastReturnedFuelID += 1 #adds one to the last returnedFuelID
+                        #print("Lastreturned After: ", currentLastReturnedFuelID)
+                        
+                        # Creating a database or connect to one
+                        conn = sqlite3.connect('petrolstation.db')
+
+                        # Create a cursor
+                        c = conn.cursor()
+                        #print("this is pms 1")
+                        # Updating the tblReturnedFuel table                    
+                        c.execute("INSERT INTO tblReturnedFuel VALUES (:returnedFuelID, :returnedFuelDate, :returnedFuelBranchID, :returnedFuelProductID, :returnedFuelPumpID, :returnedFuelLiters)",
+                            {
+                                'returnedFuelID': currentLastReturnedFuelID,
+                                'returnedFuelDate': currentDateBranch1,
+                                'returnedFuelBranchID': 1,
+                                'returnedFuelProductID': 1,
+                                'returnedFuelPumpID': fuel_returned_pump_pms.get(),
+                                'returnedFuelLiters': fuel_returned_pms_branch1.get()
+                            })
+
+                        # Commit changes
+                        conn.commit()
+
+                        # Close connection
+                        conn.close()
+
+                        continue
                 
-                elif fuel_returned_pump_pms.get() == "": #means we don't have an entry in the pms section
+                elif entries == 3:
+                    #print("Entries before: ", entries)
                     entries -= 1
-                    pass
+                    #print("Entries after: ", entries)
 
-                elif fuel_returned_pump_ago.get() != "": #means there is an entry in the ago section
+                    if fuel_returned_pump_pms.get() == "": #means we don't have an entry in the pms section
+                        #print("pms 2")                    
+                        continue
 
-                    currentLastReturnedFuelID += 1 #adds one to the last returnedFuelID
-
-                    # Creating a database or connect to one
-                    conn = sqlite3.connect('petrolstation.db')
-
-                    # Create a cursor
-                    c = conn.cursor()
-                    
-                    # Updating the tblReturnedFuel table                      
-                    c.execute("INSERT INTO tblReturnedFuel VALUES (:returnedFuelID, :returnedFuelDate, :returnedFuelBranchID, :returnedFuelProductID, :returnedFuelPumpID, :returnedFuelLiters)",
-                        {
-                            'returnedFuelID': currentLastReturnedFuelID,
-                            'returnedFuelDate': currentDateBranch1,
-                            'returnedFuelBranchID': 1,
-                            'returnedFuelProductID': 2,
-                            'returnedFuelPumpID': fuel_returned_pump_ago.get(),
-                            'returnedFuelLiters': fuel_returned_ago_branch1.get()
-                        })
-
-                    # Commit changes
-                    conn.commit()
-
-                    # Close connection
-                    conn.close()
-
+                elif entries == 2:
+                    #print("Entries before: ", entries)
                     entries -= 1
+                    #print("Entries after: ", entries)
+
+                    if fuel_returned_pump_ago.get() != "": #means there is an entry in the ago section
+
+                        currentLastReturnedFuelID += 1 #adds one to the last returnedFuelID
+
+                        # Creating a database or connect to one
+                        conn = sqlite3.connect('petrolstation.db')
+
+                        # Create a cursor
+                        c = conn.cursor()
+                        #print("ago 1")
+                        # Updating the tblReturnedFuel table                      
+                        c.execute("INSERT INTO tblReturnedFuel VALUES (:returnedFuelID, :returnedFuelDate, :returnedFuelBranchID, :returnedFuelProductID, :returnedFuelPumpID, :returnedFuelLiters)",
+                                {
+                                    'returnedFuelID': currentLastReturnedFuelID,
+                                    'returnedFuelDate': currentDateBranch1,
+                                    'returnedFuelBranchID': 1,
+                                    'returnedFuelProductID': 2,
+                                    'returnedFuelPumpID': fuel_returned_pump_ago.get(),
+                                    'returnedFuelLiters': fuel_returned_ago_branch1.get()
+                                })
+
+                        # Commit changes
+                        conn.commit()
+
+                        # Close connection
+                        conn.close()
+                        
+                        continue
 
                 else: #means there is no entry  in the ago section
+                    #print("ago 2")
+                    #print("Entries before: ", entries)
                     entries -= 1
-                    pass
+                    #print("Entries after: ", entries)
+                    break
             
                         
             # Updating the total returned fuel label to show the actual returned fuel
-            total_fuel_returned_pms_branch1 = float(fuel_returned_pms_branch1.get())
-            total_fuel_returned_ago_branch1 = float(fuel_returned_ago_branch1.get())
+            # Use try/except to ensure the program runs when there is an error due to empty string
+                
+            try: #this will run well where there is an input
+                total_fuel_returned_pms_branch1 = float(fuel_returned_pms_branch1.get())
+            except: #this will run when there is no input == empty string
+                total_fuel_returned_pms_branch1 += 0
+            
+            try:
+                total_fuel_returned_ago_branch1 = float(fuel_returned_ago_branch1.get())
+            except:
+                total_fuel_returned_ago_branch1 += 0
+
 
             global cummulative_fuel_returned_pms_branch1
             global cummulative_fuel_returned_ago_branch1 
@@ -388,8 +416,8 @@ def branchFtn():
             cummulative_fuel_returned_pms_branch1 += total_fuel_returned_pms_branch1
             cummulative_fuel_returned_ago_branch1 += total_fuel_returned_ago_branch1
                         
-            fuel_returned_pms_label.config(text=cummulative_fuel_returned_pms_branch1)   
-            fuel_returned_ago_label.config(text=cummulative_fuel_returned_ago_branch1)
+            total_fuel_returned_pms_label.config(text=cummulative_fuel_returned_pms_branch1)   
+            total_fuel_returned_ago_label.config(text=cummulative_fuel_returned_ago_branch1)
             
             # updating variables used in displaying the total pms and ago sales liters when factoring total returned fuel
             day_sale_liters_pms_branch1 = total_day_pms_liters_branch1 - cummulative_fuel_returned_pms_branch1
@@ -655,13 +683,13 @@ def branchFtn():
     # Creating Fuel Returned Total (L) labels
     fuel_returned_label = Label(editor_branch1, text="Total (L) PMS")
     fuel_returned_label.grid(row=9, column=0, pady=5)
-    fuel_returned_pms_label = Label(editor_branch1, text=fuel_returned_pms_branch1, borderwidth=3, relief="sunken")
-    fuel_returned_pms_label.grid(row=9, column=1, ipadx=87)
+    total_fuel_returned_pms_label = Label(editor_branch1, text=fuel_returned_pms_branch1, borderwidth=3, relief="sunken")
+    total_fuel_returned_pms_label.grid(row=9, column=1, ipadx=87)
 
     fuel_returned_label = Label(editor_branch1, text="Total (L) AGO")
     fuel_returned_label.grid(row=9, column=2)
-    fuel_returned_ago_label = Label(editor_branch1, text=fuel_returned_ago_branch1, borderwidth=3, relief="sunken")
-    fuel_returned_ago_label.grid(row=9, column=3, ipadx=87)
+    total_fuel_returned_ago_label = Label(editor_branch1, text=fuel_returned_ago_branch1, borderwidth=3, relief="sunken")
+    total_fuel_returned_ago_label.grid(row=9, column=3, ipadx=87)
     
         
     # CREATING TOTAL SALES 
