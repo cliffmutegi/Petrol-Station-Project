@@ -419,7 +419,7 @@ c.execute("""CREATE TABLE tblIndirectCustomerDetail (
     )""")
 
 #commit our command
-conn.commit()'''
+conn.commit()
 
 
 # 18 TBLTANKS
@@ -466,7 +466,7 @@ c.execute("""CREATE TABLE tblDips (
 conn.commit()
 
 
-'''# 20 TBLDAILYCOLLECTION
+# 20 TBLDAILYCOLLECTION
 #Delete table tblDailyCollection if it exists
 c.execute("""DROP TABLE IF EXISTS tblDailyCollection""")
 
@@ -497,7 +497,7 @@ c.execute("""CREATE TABLE tblDailyCollection (
 conn.commit()
 
 
-# 21 TBLMAINSUPPLYSTOCK
+'''# 21 TBLMAINSUPPLYSTOCK
 #Delete table tblMainSupplyStock if it exists
 c.execute("""DROP TABLE IF EXISTS tblMainSupplyStock""")
 
@@ -506,24 +506,42 @@ conn.commit()
 
 #Create table tblMainSupplyStock 
 c.execute("""CREATE TABLE tblMainSupplyStock (
-        supplyID integer PRIMARY KEY,
-        supplyDate date,
-        supplyBranchID integer,
-        supplyProductID integer,
-        supplyTruckNumber integer,
-        supplyCurrencyID,
-        supplyPurchasePrice money,
-        supplyLiters real,
-        FOREIGN KEY(supplyCurrencyID) REFERENCES tblCurrency(currencyID),
-        FOREIGN KEY(supplyBranchID) REFERENCES tblBranches(branchID),
-        FOREIGN KEY(supplyProductID) REFERENCES tblProducts(productID)
+        mainSupplyID integer PRIMARY KEY,
+        mainSupplyDate date,
+        mainSupplyProductID integer,
+        mainSupplyTruckNumber integer,
+        mainSupplyCurrencyID,
+        mainSupplyPurchasePrice money,
+        mainSupplyLiters real,
+        FOREIGN KEY(mainSupplyCurrencyID) REFERENCES tblCurrency(currencyID),
+        FOREIGN KEY(mainSupplyProductID) REFERENCES tblProducts(productID)
     )""")
 
 #commit our command
 conn.commit()
 
 
-# 22 TBLINTERBRANCHSUPPLY
+# 22 TBLMAINSUPPLYSTOCKTOBRANCH
+#Delete table tblMainSupplyStockToBranch if it exists
+c.execute("""DROP TABLE IF EXISTS tblMainSupplyStockToBranch""")
+
+#commit our command
+conn.commit()
+
+#Create table tblMainSupplyStockToBranch
+c.execute("""CREATE TABLE tblMainSupplyStockToBranch (
+        supplyStockID integer PRIMARY KEY,
+        supplyStockDate date,
+        mainSupplyID integer,
+        supplyStockLiters real,
+        FOREIGN KEY(mainSupplyID) REFERENCES tblMainSupplyStock(mainSupplyID)
+    )""")
+
+#commit our command
+conn.commit()
+
+
+# 23 TBLINTERBRANCHSUPPLY
 #Delete table tblInterBranchSupply if it exists
 c.execute("""DROP TABLE IF EXISTS tblInterBranchSupply""")
 
@@ -549,7 +567,7 @@ c.execute("""CREATE TABLE tblInterBranchSupply (
 conn.commit()
 
 
-# 23 TBLRETURNEDFUEL
+'''# 24 TBLRETURNEDFUEL
 #Delete table tblReturnedFuel if it exists
 c.execute("""DROP TABLE IF EXISTS tblReturnedFuel""")
 
