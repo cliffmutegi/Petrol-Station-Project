@@ -419,32 +419,54 @@ c.execute("""CREATE TABLE tblIndirectCustomerDetail (
     )""")
 
 #commit our command
-conn.commit()
+conn.commit()'''
 
 
-# 18 TBLGAUGE
-#Delete table tblGauge if it exists
-c.execute("""DROP TABLE IF EXISTS tblGauge""")
+# 18 TBLTANKS
+#Delete table tblTanks if it exists
+c.execute("""DROP TABLE IF EXISTS tblTanks""")
 
 #commit our command
 conn.commit()
 
-#Create table tblGauge 
-c.execute("""CREATE TABLE tblGauge (
-        gaugeID integer PRIMARY KEY,
-        gaugeDate date,
-        gaugeBranchID integer,
-        gaugeProductID integer,
-        gaugeTankNumber integer,
-        FOREIGN KEY(gaugeBranchID) REFERENCES tblBranches(branchID),
-        FOREIGN KEY(gaugeProductID) REFERENCES tblProducts(productID)
+#Create table tblTanks 
+c.execute("""CREATE TABLE tblTanks (
+        tankID integer PRIMARY KEY,
+        tankBranchID integer,
+        tankProductID integer,
+        tankCapacity integer,
+        FOREIGN KEY(tankBranchID) REFERENCES tblBranches(branchID),
+        FOREIGN KEY(tankProductID) REFERENCES tblProducts(productID)
     )""")
 
 #commit our command
 conn.commit()
 
 
-# 19 TBLDAILYCOLLECTION
+# 19 TBLDIPS
+#Delete table tblDips if it exists
+c.execute("""DROP TABLE IF EXISTS tblDips""")
+
+#commit our command
+conn.commit()
+
+#Create table tblDips 
+c.execute("""CREATE TABLE tblDips (
+        dipID integer PRIMARY KEY,
+        dipDate date,
+        dipBranchID integer,
+        dipProductID integer,
+        dipTankID integer,
+        FOREIGN KEY(dipBranchID) REFERENCES tblBranches(branchID),
+        FOREIGN KEY(dipProductID) REFERENCES tblProducts(productID),
+        FOREIGN KEY(dipTankID) REFERENCES tblTanks(tankID)
+    )""")
+
+#commit our command
+conn.commit()
+
+
+'''# 20 TBLDAILYCOLLECTION
 #Delete table tblDailyCollection if it exists
 c.execute("""DROP TABLE IF EXISTS tblDailyCollection""")
 
@@ -475,7 +497,7 @@ c.execute("""CREATE TABLE tblDailyCollection (
 conn.commit()
 
 
-# 20 TBLMAINSUPPLYSTOCK
+# 21 TBLMAINSUPPLYSTOCK
 #Delete table tblMainSupplyStock if it exists
 c.execute("""DROP TABLE IF EXISTS tblMainSupplyStock""")
 
@@ -501,7 +523,7 @@ c.execute("""CREATE TABLE tblMainSupplyStock (
 conn.commit()
 
 
-# 21 TBLINTERBRANCHSUPPLY
+# 22 TBLINTERBRANCHSUPPLY
 #Delete table tblInterBranchSupply if it exists
 c.execute("""DROP TABLE IF EXISTS tblInterBranchSupply""")
 
@@ -527,7 +549,7 @@ c.execute("""CREATE TABLE tblInterBranchSupply (
 conn.commit()
 
 
-# 22 TBLRETURNEDFUEL
+# 23 TBLRETURNEDFUEL
 #Delete table tblReturnedFuel if it exists
 c.execute("""DROP TABLE IF EXISTS tblReturnedFuel""")
 
