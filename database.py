@@ -497,7 +497,7 @@ c.execute("""CREATE TABLE tblDailyCollection (
 conn.commit()
 
 
-'''# 21 TBLMAINSUPPLYSTOCK
+# 21 TBLMAINSUPPLYSTOCK
 #Delete table tblMainSupplyStock if it exists
 c.execute("""DROP TABLE IF EXISTS tblMainSupplyStock""")
 
@@ -554,12 +554,10 @@ c.execute("""CREATE TABLE tblInterBranchSupply (
         interBranchSupplyDate date,
         interBranchReceivingBranchID integer,
         interBranchSupplyingBranchID integer,
-        interBranchSupplyProductID integer,
         mainSupplyStockID integer,
         interBranchSupplyLiters real,
         FOREIGN KEY(interBranchReceivingBranchID) REFERENCES tblBranches(branchID),
         FOREIGN KEY(interBranchSupplyingBranchID) REFERENCES tblBranches(branchID),
-        FOREIGN KEY(interBranchSupplyProductID) REFERENCES tblProducts(productID),
         FOREIGN KEY(mainSupplyStockID) REFERENCES tblMainSupplyStock(supplyID)
     )""")
 
@@ -567,7 +565,7 @@ c.execute("""CREATE TABLE tblInterBranchSupply (
 conn.commit()
 
 
-'''# 24 TBLRETURNEDFUEL
+# 24 TBLRETURNEDFUEL
 #Delete table tblReturnedFuel if it exists
 c.execute("""DROP TABLE IF EXISTS tblReturnedFuel""")
 

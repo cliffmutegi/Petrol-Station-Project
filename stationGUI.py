@@ -298,11 +298,15 @@ def branchFtn():
             global total_fuel_returned_pms_branch1
             global total_fuel_returned_ago_branch1
             global currentLastReturnedFuelID
+            global cummulative_fuel_returned_pms_branch1
+            global cummulative_fuel_returned_ago_branch1 
 
             currentLastReturnedFuelID = LastReturnedFuelIDBranch1
 
             total_fuel_returned_pms_branch1 = 0
             total_fuel_returned_ago_branch1 = 0
+            cummulative_fuel_returned_pms_branch1 = 0
+            cummulative_fuel_returned_ago_branch1 = 0
 
                         
             # Updating the database
@@ -409,10 +413,7 @@ def branchFtn():
             except:
                 total_fuel_returned_ago_branch1 += 0
 
-
-            global cummulative_fuel_returned_pms_branch1
-            global cummulative_fuel_returned_ago_branch1 
-            
+                      
             cummulative_fuel_returned_pms_branch1 += total_fuel_returned_pms_branch1
             cummulative_fuel_returned_ago_branch1 += total_fuel_returned_ago_branch1
                         
@@ -473,10 +474,7 @@ def branchFtn():
 
         submit_btn = Button(editor_fuel_returned_branch1, text="Submit", command=fuelReturnedSubmitFtn)
         submit_btn.grid(row=7, column=1, pady=10, padx=(10,0), ipadx=60)
-
-
-        
-
+  
 
     # Creating restockSubmit function
     # For interbranch supply, I need a way to calculate the fuel used for a branch so that I can determine the mainStockSupplyID
@@ -488,12 +486,336 @@ def branchFtn():
         editor_restocking_branch1 = Tk() #this is the main window its also the first line to put when working with tkinter
         editor_restocking_branch1.title('Dechargement Place') #this is the title of the window
         editor_restocking_branch1.geometry("400x260") #specifying the size of the root window
+                      
+        
+        #  I) Retrieving and saving the previous interBranchSupplyID
+    
+        # Creating a database or connect to one
+        conn = sqlite3.connect('petrolstation.db')
+
+        # Create a cursor
+        c = conn.cursor()
+        
+        c.execute("SELECT *, oid FROM tblInterBranchSupply WHERE interBranchSupplyID IN (SELECT MAX(interBranchSupplyID) FROM tblInterBranchSupply)") #oid means include the default primary key. MAX(interBranchSupplyID) ensures we only return results from the last id entered
+        interBranchSupplyRecords = c.fetchall() #this will store all the records
+        #print("Printing interBranchSupplyRecords: ", interBranchSupplyRecords) #this will print the records in the terminal
+
+        # Declare and initialize global variables
+        global LastInterBranchSupplyIDBranch1
+
+        LastInterBranchSupplyIDBranch1 = 0
+        
+        # Retrieving last index and assigning it to LastInterBranchSupplyIDBranch1
+        for record in interBranchSupplyRecords:
+            id = record[0]
+            LastInterBranchSupplyIDBranch1 = id
+            
+        #print("Printing LastInterBranchSupplyIDBranch1: ", LastInterBranchSupplyIDBranch1)
+        
+        # Commit changes
+        conn.commit()
+
+        # Close connection
+        conn.close()
 
         
-        # Creating restockSubmit function
-        def restockSubmitFtn():
-            return
+        #  II) Retrieving and saving the previous mainSupplyToBranchID
     
+        # Creating a database or connect to one
+        conn = sqlite3.connect('petrolstation.db')
+
+        # Create a cursor
+        c = conn.cursor()
+        
+        c.execute("SELECT *, oid FROM tblMainSupplyStockToBranch WHERE supplyStockID IN (SELECT MAX(supplyStockID) FROM tblMainSupplyStockToBranch)") #oid means include the default primary key. MAX(supplyStockID) ensures we only return results from the last id entered
+        supplyToBranchRecords = c.fetchall() #this will store all the records
+        #print("Printing supplyToBranchRecords: ", supplyToBranchRecords) #this will print the records in the terminal
+
+        # Declare and initialize global variables
+        global LastSupplyStockIDBranch1
+
+        LastSupplyStockIDBranch1 = 0
+        
+        # Retrieving last index and assigning it to LastSupplyStockIDBranch1
+        for record in supplyToBranchRecords:
+            id = record[0]
+            LastSupplyStockIDBranch1 = id
+            
+        #print("Printing LastSupplyStockIDBranch1: ", LastSupplyStockIDBranch1)
+        
+        # Commit changes
+        conn.commit()
+
+        # Close connection
+        conn.close()
+
+
+        #  III) Determining the mainSupplyID for interbranch supplies
+        # Will need to come up with a function that will compute the mainsupplyid for interbranch supplies
+    
+
+        #  IV) Determining the mainSupplyID for truck supplies
+    
+        def ComputeMainSupplyIDTruckSuppliesFtn(userDate, product, truckNo):
+            #print("UserDate: ", userDate)
+            #print("UserProductIDAgo: ", product)
+            #print("UserTruckNoAgo: ", truckNo)
+
+            # Creating a database or connect to one
+            conn = sqlite3.connect('petrolstation.db')
+
+            # Create a cursor
+            c = conn.cursor()
+            
+            c.execute("SELECT *, oid FROM tblMainSupplyStock WHERE ((mainSupplyDate = :UserDate OR mainSupplyDate < :UserDate) AND mainSupplyProductID = :UserProductID AND mainSupplyTruckNumber = :UserTruckNo)",
+                    {
+                        'UserDate': userDate,
+                        'UserProductID': product,
+                        'UserTruckNo': truckNo
+                        
+                    }) #finds data where a supply happened the samedate or later than the supply truck arrival date
+            
+            mainSupplyTruckRecords = c.fetchall() #this will store all the records
+            #print("Printing mainSupplyTruckRecords: ", mainSupplyTruckRecords) #this will print the records in the terminal
+
+            # Declare and initialize global variables
+            global mainSupplyIDBranch1
+
+            mainSupplyIDBranch1 = 0
+            
+            # Retrieving mainSupplyID and assigning it to mainSupplyIDBranch1
+            for record in mainSupplyTruckRecords:
+                id = record[0]
+                mainSupplyIDBranch1 = id
+                
+            #print("Printing mainSupplyIDBranch1: ", mainSupplyIDBranch1)
+            
+            # Commit changes
+            conn.commit()
+
+            # Close connection
+            conn.close()
+
+            return mainSupplyIDBranch1
+
+
+       
+        # V) Creating restockSubmit function
+        def restockSubmitFtn():
+            # Declaring and initializing global variables 
+            global total_supply_stock_pms_branch1
+            global total_supply_stock_ago_branch1
+            global currentLastSupplyStockIDBranch1
+            global currentLastInterBranchSupplyIDBranch1
+            global cummulative_restock_amount_pms_branch1
+            global cummulative_restock_amount_ago_branch1
+
+            currentLastInterBranchSupplyIDBranch1 = LastInterBranchSupplyIDBranch1
+            currentLastSupplyStockIDBranch1 = LastSupplyStockIDBranch1
+
+            total_supply_stock_pms_branch1 = 0
+            total_supply_stock_ago_branch1 = 0
+            cummulative_restock_amount_pms_branch1 = 0
+            cummulative_restock_amount_ago_branch1 = 0
+
+                        
+            # Updating the database
+            # Using a while statement to loop through until we fill all entries i.e. pms and ago
+            # Using an if/else statement to allow the correct identification of the product 
+            entries = 8
+            while entries > 0:
+                if entries == 8:
+                    #print("Entries before: ", entries)
+                    entries -= 1
+                    #print("Entries after: ", entries)
+                    '''
+                    if restock_branch_source_pms_branch1.get() != "": #means we have an entry in the pms section
+                        currentLastInterBranchSupplyIDBranch1 += 1 #adds one to the last returnedFuelID
+                                                
+                        # Creating a database or connect to one
+                        conn = sqlite3.connect('petrolstation.db')
+
+                        # Create a cursor
+                        c = conn.cursor()
+                        #print("this is pms 1")
+
+                        # Updating the tblInterBranchSupply table                    
+                        c.execute("INSERT INTO tblInterBranchSupply VALUES (:interBranchSupplyID, :interBranchSupplyDate, :interBranchReceivingBranchID, :interBranchSupplyingBranchID, :mainSupplyStockID, :interBranchSupplyLiters)",
+                            {
+                                'interBranchSupplyID': currentLastInterBranchSupplyIDBranch1,
+                                'interBranchSupplyDate': currentDateBranch1,
+                                'interBranchReceivingBranchID': 1,
+                                'interBranchSupplyingBranchID': restock_branch_source_pms_branch1.get(),
+                                'mainSupplyStockID': fuel_returned_pump_pms.get(),
+                                'interBranchSupplyLiters': restock_amount_pms_branch1.get()
+                            })
+
+                        # Commit changes
+                        conn.commit()
+
+                        # Close connection
+                        conn.close()
+
+                        continue'''
+                
+                elif entries == 7:
+                    #print("Entries before: ", entries)
+                    entries -= 1
+                    #print("Entries after: ", entries)
+
+                    if restock_branch_source_pms_branch1.get() == "": #means we don't have an entry in the pms section
+                        #print("pms 2  branch")                    
+                        continue
+
+                elif entries == 6:
+                    #print("Entries before: ", entries)
+                    entries -= 1
+                    #print("Entries after: ", entries)
+
+                    if restock_truck_pms_branch1.get() != "": #means there is an entry in the pms truck section
+
+                        currentLastSupplyStockIDBranch1 += 1 #adds one to the currentLastSupplyStockIDBranch1
+
+                        # Creating a database or connect to one
+                        conn = sqlite3.connect('petrolstation.db')
+
+                        # Create a cursor
+                        c = conn.cursor()
+                        #print("pms 1 truck")
+
+                        # Updating the tblMainSupplyStockToBranch table                      
+                        c.execute("INSERT INTO tblMainSupplyStockToBranch VALUES (:supplyStockID, :supplyStockDate, :mainSupplyID, :supplyStockLiters)",
+                                {
+                                    'supplyStockID': currentLastSupplyStockIDBranch1,
+                                    'supplyStockDate': currentDateBranch1,
+                                    'mainSupplyID': ComputeMainSupplyIDTruckSuppliesFtn(currentDateBranch1, 1, restock_truck_pms_branch1.get()),
+                                    'supplyStockLiters': restock_amount_pms_branch1.get()
+                                })
+
+                        # Commit changes
+                        conn.commit()
+
+                        # Close connection
+                        conn.close()
+                        
+                        continue
+
+                elif entries == 5:
+                    #print("Entries before: ", entries)
+                    entries -= 1
+                    #print("Entries after: ", entries)
+
+                    if restock_truck_pms_branch1.get() == "": #means we don't have an entry in the pms section
+                        #print("pms 2 truck")                    
+                        continue
+
+                if entries == 4:
+                    #print("Entries before: ", entries)
+                    entries -= 1
+                    #print("Entries after: ", entries)
+                    '''
+                    if restock_branch_source_ago_branch1.get() != "": #means we have an entry in the pms section
+                        currentLastInterBranchSupplyIDBranch1 += 1 #adds one to the last returnedFuelID
+                                                
+                        # Creating a database or connect to one
+                        conn = sqlite3.connect('petrolstation.db')
+
+                        # Create a cursor
+                        c = conn.cursor()
+                        #print("this is ago 1")
+
+                        # Updating the tblInterBranchSupply table                    
+                        c.execute("INSERT INTO tblInterBranchSupply VALUES (:interBranchSupplyID, :interBranchSupplyDate, :interBranchReceivingBranchID, :interBranchSupplyingBranchID, :mainSupplyStockID, :interBranchSupplyLiters)",
+                            {
+                                'interBranchSupplyID': currentLastInterBranchSupplyIDBranch1,
+                                'interBranchSupplyDate': currentDateBranch1,
+                                'interBranchReceivingBranchID': 1,
+                                'interBranchSupplyingBranchID': restock_branch_source_ago_branch1.get(),
+                                'mainSupplyStockID': fuel_returned_pump_pms.get(),
+                                'interBranchSupplyLiters': restock_amount_ago_branch1.get()
+                            })
+
+                        # Commit changes
+                        conn.commit()
+
+                        # Close connection
+                        conn.close()
+
+                        continue'''
+                
+                elif entries == 3:
+                    #print("Entries before: ", entries)
+                    entries -= 1
+                    #print("Entries after: ", entries)
+
+                    if restock_branch_source_ago_branch1.get() == "": #means we don't have an entry in the pms section
+                        #print("ago 2 branch")                    
+                        continue
+
+                elif entries == 2:
+                    #print("Entries before: ", entries)
+                    entries -= 1
+                    #print("Entries after: ", entries)
+
+                    if restock_truck_ago_branch1.get() != "": #means there is an entry in the pms truck section
+
+                        currentLastSupplyStockIDBranch1 += 1 #adds one to the currentLastSupplyStockIDBranch1
+
+                        # Creating a database or connect to one
+                        conn = sqlite3.connect('petrolstation.db')
+
+                        # Create a cursor
+                        c = conn.cursor()
+                        #print("ago 1 truck")
+
+                        # Updating the tblMainSupplyStockToBranch table                      
+                        c.execute("INSERT INTO tblMainSupplyStockToBranch VALUES (:supplyStockID, :supplyStockDate, :mainSupplyID, :supplyStockLiters)",
+                                {
+                                    'supplyStockID': currentLastSupplyStockIDBranch1,
+                                    'supplyStockDate': currentDateBranch1,
+                                    'mainSupplyID': ComputeMainSupplyIDTruckSuppliesFtn(currentDateBranch1, 2, restock_truck_ago_branch1.get()),
+                                    'supplyStockLiters': restock_amount_ago_branch1.get()
+                                })
+
+                        # Commit changes
+                        conn.commit()
+
+                        # Close connection
+                        conn.close()
+                        
+                        continue
+
+                else: #means there is no entry  in the ago truck section
+                    #print("ago 2 truck")
+                    #print("Entries before: ", entries)
+                    entries -= 1
+                    #print("Entries after: ", entries)
+
+            # Updating the total returned fuel label to show the actual returned fuel
+            # Use try/except to ensure the program runs when there is an error due to empty string
+                
+            try: #this will run well where there is an input
+                total_supply_stock_pms_branch1 = float(restock_amount_pms_branch1.get())
+            except: #this will run when there is no input == empty string
+                total_supply_stock_pms_branch1 += 0.0
+            
+            try:
+                total_supply_stock_ago_branch1 = float(restock_amount_ago_branch1.get())
+            except:
+                total_supply_stock_ago_branch1 += 0.0
+
+                        
+            cummulative_restock_amount_pms_branch1 += total_supply_stock_pms_branch1
+            cummulative_restock_amount_ago_branch1 += total_supply_stock_ago_branch1
+                        
+            restock_total_pms_label.config(text=cummulative_restock_amount_pms_branch1)   
+            restock_total_ago_label.config(text=cummulative_restock_amount_ago_branch1)
+            
+                       
+            # Exiting the fuel restocking window
+            editor_restocking_branch1.destroy()
+    
+        
         # Creating restockCancel function
         def restockCancelFtn():
             restock_branch_source_pms_branch1.delete(0, END)
@@ -527,7 +849,8 @@ def branchFtn():
         restock_amount_label = Label(editor_restocking_branch1, text="Quantite (L)")
         restock_amount_label.grid(row=8, column=0)
         
-        # Creating global variables (will be useful in entering data to db)
+        
+        # Creating global variables (will be useful in entering data to db) and in the user entry text boxes
         global restock_branch_source_pms_branch1
         global restock_truck_pms_branch1
         global restock_amount_pms_branch1
@@ -551,9 +874,8 @@ def branchFtn():
         restock_truck_ago_branch1.grid(row=7, column=1)
         restock_amount_ago_branch1 = Entry(editor_restocking_branch1, width=30)
         restock_amount_ago_branch1.grid(row=8, column=1)
-        
-        
-        # Creating buttons for Restocking
+       
+       # Creating buttons for Restocking
         cancel_btn = Button(editor_restocking_branch1, text="Cancel", command=restockCancelFtn)
         cancel_btn.grid(row=9, column=0, pady=5, padx=(10,0), ipadx=40)
 
