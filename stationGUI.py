@@ -883,6 +883,105 @@ def branchFtn():
         submit_btn.grid(row=9, column=1, pady=5, padx=(10,0), ipadx=60)
     
     
+    # Creating dipsBranch1Ftn function
+    
+    def dipsBranch1Ftn():
+        # EDITOR_DIPS_BRANCH1 WINDOW
+
+        # Creating a new window dips
+        global editor_dips_branch1 #need it to be global so that we can use editor.destroy 
+        editor_dips_branch1 = Tk() #this is the main window its also the first line to put when working with tkinter
+        editor_dips_branch1.title('Jauge Place') #this is the title of the window
+        editor_dips_branch1.geometry("500x200") #specifying the size of the root window
+    
+        
+        # Creating dipsCancel function
+        def dipsCancelFtn():
+            dips_wholenumber_tank1_pms_branch1.delete(0, END)
+            dips_numerator_tank1_pms_branch1.delete(0, END)
+            dips_denominator_tank1_pms_branch1.delete(0, END)
+            dips_wholenumber_tank1_ago_branch1.delete(0, END)
+            dips_numerator_tank1_ago_branch1.delete(0, END)
+            dips_denominator_tank1_ago_branch1.delete(0, END)
+            dips_wholenumber_tank2_ago_branch1.delete(0, END)
+            dips_numerator_tank2_ago_branch1.delete(0, END)
+            dips_denominator_tank2_ago_branch1.delete(0, END)
+        
+        
+         # Creating restockSubmitFtn function
+        def restockSubmitFtn():
+            pass
+        
+        # Creating Labels
+                
+        pms_label = Label(editor_dips_branch1, text="PMS")
+        pms_label.grid(row=1, column=0, columnspan=6, pady=(10,0))
+        dips_tank1_pms_label = Label(editor_dips_branch1, text="Tank 1")
+        dips_tank1_pms_label.grid(row=2, column=0)
+        dips_plus_label = Label(editor_dips_branch1, text=" + ")
+        dips_plus_label.grid(row=2, column=2)
+        dips_divide_label = Label(editor_dips_branch1, text=" / ")
+        dips_divide_label.grid(row=2, column=4)
+        
+
+        ago_label = Label(editor_dips_branch1, text="AGO")
+        ago_label.grid(row=3, column=0, columnspan=6, pady=(10,0))
+        dips_tank1_ago_label = Label(editor_dips_branch1, text="Tank 1")
+        dips_tank1_ago_label.grid(row=4, column=0)
+        dips_plus_label = Label(editor_dips_branch1, text=" + ")
+        dips_plus_label.grid(row=4, column=2)
+        dips_divide_label = Label(editor_dips_branch1, text=" / ")
+        dips_divide_label.grid(row=4, column=4)
+
+        dips_tank2_ago_label = Label(editor_dips_branch1, text="Tank 2")
+        dips_tank2_ago_label.grid(row=5, column=0)
+        dips_plus_label = Label(editor_dips_branch1, text=" + ")
+        dips_plus_label.grid(row=5, column=2)
+        dips_divide_label = Label(editor_dips_branch1, text=" / ")
+        dips_divide_label.grid(row=5, column=4)
+        
+        
+        # Creating global variables (will be useful in entering data to db) and in the user entry text boxes
+        global dips_wholenumber_tank1_pms_branch1
+        global dips_numerator_tank1_pms_branch1
+        global dips_denominator_tank1_pms_branch1
+        global dips_wholenumber_tank1_ago_branch1
+        global dips_numerator_tank1_ago_branch1
+        global dips_denominator_tank1_ago_branch1
+        global dips_wholenumber_tank2_ago_branch1
+        global dips_numerator_tank2_ago_branch1
+        global dips_denominator_tank2_ago_branch1
+
+
+        # Creating text boxes
+        # PMS
+        dips_wholenumber_tank1_pms_branch1 = Entry(editor_dips_branch1, width=30)
+        dips_wholenumber_tank1_pms_branch1.grid(row=2, column=1, padx=20)
+        dips_numerator_tank1_pms_branch1 = Entry(editor_dips_branch1, width=10)
+        dips_numerator_tank1_pms_branch1.grid(row=2, column=3)
+        dips_denominator_tank1_pms_branch1 = Entry(editor_dips_branch1, width=10)
+        dips_denominator_tank1_pms_branch1.grid(row=2, column=5)  
+        # AGO
+        dips_wholenumber_tank1_ago_branch1 = Entry(editor_dips_branch1, width=30)
+        dips_wholenumber_tank1_ago_branch1.grid(row=4, column=1, padx=20)
+        dips_numerator_tank1_ago_branch1 = Entry(editor_dips_branch1, width=10)
+        dips_numerator_tank1_ago_branch1.grid(row=4, column=3)
+        dips_denominator_tank1_ago_branch1 = Entry(editor_dips_branch1, width=10)
+        dips_denominator_tank1_ago_branch1.grid(row=4, column=5)
+        dips_wholenumber_tank2_ago_branch1 = Entry(editor_dips_branch1, width=30)
+        dips_wholenumber_tank2_ago_branch1.grid(row=5, column=1, padx=20)
+        dips_numerator_tank2_ago_branch1 = Entry(editor_dips_branch1, width=10)
+        dips_numerator_tank2_ago_branch1.grid(row=5, column=3)
+        dips_denominator_tank2_ago_branch1 = Entry(editor_dips_branch1, width=10)
+        dips_denominator_tank2_ago_branch1.grid(row=5, column=5)    
+       
+       # Creating buttons for Restocking
+        cancel_btn = Button(editor_dips_branch1, text="Cancel", command=dipsCancelFtn)
+        cancel_btn.grid(row=6, column=0, columnspan=3, pady=10, padx=(10,0), ipadx=40)
+
+        submit_btn = Button(editor_dips_branch1, text="Submit", command=restockSubmitFtn)
+        submit_btn.grid(row=6, column=3, columnspan=3, pady=10, padx=(10,0), ipadx=60)
+    
     
     # Creating advancePaymentFtn function
     def advancePaymentFtn():
@@ -1061,14 +1160,39 @@ def branchFtn():
     restock_total_ago_label = Label(editor_branch1, text=total_restock_liters_ago_branch1, borderwidth=3, relief="sunken")
     restock_total_ago_label.grid(row=13, column=3, ipadx=87)
 
-    # payments
+    
+     # DIPS / JAUGE
+    
+    # Creating global variables for text box names
+    global total_dips_liters_pms_branch1 #this variable will be used to keep track of the total dip liters for a particular day
+    global total_dips_liters_ago_branch1
+
+    total_dips_liters_pms_branch1 = 0
+    total_dips_liters_ago_branch1 = 0
+    
+    # Creating a button to launch the dips window 
+    dips_branch1_btn = Button(editor_branch1, text="Jauge", command=dipsBranch1Ftn)
+    dips_branch1_btn.grid(row=14,column=0, columnspan=4, pady=10, padx=5, ipadx=310)
+
+    # Creating Total (L) labels
+    dips_total_label = Label(editor_branch1, text="Total (L) PMS")
+    dips_total_label.grid(row=15, column=0, pady=5)
+    dips_total_pms_label = Label(editor_branch1, text=total_dips_liters_pms_branch1, borderwidth=3, relief="sunken")
+    dips_total_pms_label.grid(row=15, column=1, ipadx=87)
+
+    dips_total_label = Label(editor_branch1, text="Total (L) AGO")
+    dips_total_label.grid(row=15, column=2)
+    dips_total_ago_label = Label(editor_branch1, text=total_dips_liters_ago_branch1, borderwidth=3, relief="sunken")
+    dips_total_ago_label.grid(row=15, column=3, ipadx=87)
+    
+    # PAYMENTS
     
     #Creating buttons to launch the advanced and debt payments windows
     advance_payment_btn = Button(editor_branch1, text="Advance Payments", command=advancePaymentFtn)
-    advance_payment_btn.grid(row=14,column=0, columnspan=4, pady=15, padx=5, ipadx=300)
+    advance_payment_btn.grid(row=16,column=0, columnspan=4, pady=15, padx=5, ipadx=300)
 
     debt_payment_btn = Button(editor_branch1, text="Debt Payments", command=debtPaymentFtn)
-    debt_payment_btn.grid(row=15,column=0, columnspan=4, pady=5, padx=5, ipadx=310)
+    debt_payment_btn.grid(row=17,column=0, columnspan=4, pady=5, padx=5, ipadx=310)
 
 
 #a Tkinter variable
