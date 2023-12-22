@@ -1432,7 +1432,6 @@ drop.pack()
 #creating a button widget for prompting user to go to selected branch
 go_to_branch_btn = Button(root, text="Go to Branch", command=branchFtn).pack()
 
-
 # Commit changes
 conn.commit()
 
