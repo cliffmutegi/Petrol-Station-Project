@@ -910,7 +910,230 @@ def branchFtn():
         
          # Creating restockSubmitFtn function
         def restockSubmitFtn():
-            pass
+            # Declaring and initializing global variables
+            global cummulative_dips_pms_branch1
+            global cummulative_dips_ago_branch1
+            global total_dips_tank1_pms_branch1
+            global total_dips_tank1_ago_branch1
+            global total_dips_tank2_ago_branch1
+
+            cummulative_dips_pms_branch1 = 0
+            cummulative_dips_ago_branch1 = 0
+            total_dips_tank1_pms_branch1 = 0
+            total_dips_tank1_ago_branch1 = 0
+            total_dips_tank2_ago_branch1 = 0
+
+            # I) Function to compute the total dips per tank
+
+            def DipsTotalFtn(wholenumber, numerator, denominator, multiplier):
+                return (wholenumber*multiplier) + ((numerator/denominator)*multiplier)
+            
+            # II) Updating variables for the total and cummulative dip liters
+
+            # PMS
+            # Dealing with empty user inputs
+            try:
+                wholenumber_tank1_pms = float(dips_wholenumber_tank1_pms_branch1.get())
+            except:
+                wholenumber_tank1_pms = 0
+
+            try: 
+                numerator_tank1_pms = float(dips_numerator_tank1_pms_branch1.get())
+            except:
+                numerator_tank1_pms = 0
+
+            try:
+                denominator_tank1_pms = float(dips_denominator_tank1_pms_branch1.get())
+            except:
+                denominator_tank1_pms = 1
+
+            total_dips_tank1_pms_branch1 = DipsTotalFtn(wholenumber_tank1_pms, numerator_tank1_pms, denominator_tank1_pms, 450)
+            cummulative_dips_pms_branch1 = total_dips_tank1_pms_branch1
+            
+            # AGO
+            # Dealing with empty user inputs
+            try:
+                wholenumber_tank1_ago = float(dips_wholenumber_tank1_ago_branch1.get())
+            except:
+                wholenumber_tank1_ago = 0
+
+            try: 
+                numerator_tank1_ago = float(dips_numerator_tank1_ago_branch1.get())
+            except:
+                numerator_tank1_ago = 0
+
+            try:
+                denominator_tank1_ago = float(dips_denominator_tank1_ago_branch1.get())
+            except:
+                denominator_tank1_ago = 1
+
+            try:
+                wholenumber_tank2_ago = float(dips_wholenumber_tank2_ago_branch1.get())
+            except:
+                wholenumber_tank2_ago = 0
+
+            try: 
+                numerator_tank2_ago = float(dips_numerator_tank2_ago_branch1.get())
+            except:
+                numerator_tank2_ago = 0
+
+            try:
+                denominator_tank2_ago = float(dips_denominator_tank2_ago_branch1.get())
+            except:
+                denominator_tank2_ago = 1
+
+            total_dips_tank1_ago_branch1 = DipsTotalFtn(wholenumber_tank1_ago, numerator_tank1_ago, denominator_tank1_ago, 450)
+            total_dips_tank2_ago_branch1 = DipsTotalFtn(wholenumber_tank2_ago, numerator_tank2_ago, denominator_tank2_ago, 450)
+            cummulative_dips_ago_branch1 = total_dips_tank1_ago_branch1 + total_dips_tank2_ago_branch1
+
+
+            # Updating the total dips labels to show the actual dips for the day
+            dips_total_pms_label.config(text=cummulative_dips_pms_branch1)
+            dips_total_ago_label.config(text=cummulative_dips_ago_branch1)
+
+
+            # III) # Retrieving and saving the last DipID
+            
+            # Creating a database or connect to one
+            conn = sqlite3.connect('petrolstation.db')
+
+            # Create a cursor
+            c = conn.cursor()
+            
+            c.execute("SELECT *, oid FROM tblDips WHERE dipID IN (SELECT MAX(dipID) FROM tblDips)") #oid means include the default primary key. MAX(dipID) ensures we only return results from the last id entered
+            dipsRecords = c.fetchall() #this will store all the records
+            print("Printing dipsRecords: ", dipsRecords) #this will print the records in the terminal
+
+            # Declare and initialize global variables
+            global LastDipIDBranch1
+
+            LastDipIDBranch1 = 0
+            
+            # Retrieving last index and assigning it to LastDipIDBranch1
+            for record in dipsRecords:
+                id = record[0]
+                LastDipIDBranch1 = id
+                
+            print("Printing LastDipIDBranch1: ", LastDipIDBranch1)
+            
+            # Commit changes
+            conn.commit()
+
+            # Close connection
+            conn.close()
+
+            
+            # IV) Updating the tblDips in the Database
+
+            # Using a while statement to loop through until we fill all entries i.e. pms and ago
+            # Using an if/else statement to allow the correct identification of the product 
+            
+            global currentLastDipIDBranch1
+
+            currentLastDipIDBranch1 = LastDipIDBranch1
+
+            entries = 3
+            while entries > 0:
+                if entries == 3:
+                    print("Entries before: ", entries)
+                    entries -= 1
+                    print("Entries after: ", entries)
+                                  
+                    currentLastDipIDBranch1 += 1 #adds one to the last dipID
+                                                
+                    # Creating a database or connect to one
+                    conn = sqlite3.connect('petrolstation.db')
+
+                    # Create a cursor
+                    c = conn.cursor()
+                    print("this is pms 1")
+
+                    # Updating the tblDip table                    
+                    c.execute("INSERT INTO tblDips VALUES (:dipID, :dipDate, :dipBranchID, :dipProductID, :dipTankID, :dipQuantity)",
+                        {
+                            'dipID': currentLastDipIDBranch1,
+                            'dipDate': currentDateBranch1,
+                            'dipBranchID': 1,
+                            'dipProductID': 1,
+                            'dipTankID': 1,
+                            'dipQuantity': total_dips_tank1_pms_branch1
+                        })
+
+                    # Commit changes
+                    conn.commit()
+
+                    # Close connection
+                    conn.close()
+
+                    continue
+                
+                elif entries == 2:
+                    print("Entries before: ", entries)
+                    entries -= 1
+                    print("Entries after: ", entries)
+                                  
+                    currentLastDipIDBranch1 += 1 #adds one to the last dipID
+                                                
+                    # Creating a database or connect to one
+                    conn = sqlite3.connect('petrolstation.db')
+
+                    # Create a cursor
+                    c = conn.cursor()
+                    print("this is ago 1")
+
+                    # Updating the tblDip table                    
+                    c.execute("INSERT INTO tblDips VALUES (:dipID, :dipDate, :dipBranchID, :dipProductID, :dipTankID, :dipQuantity)",
+                        {
+                            'dipID': currentLastDipIDBranch1,
+                            'dipDate': currentDateBranch1,
+                            'dipBranchID': 1,
+                            'dipProductID': 2,
+                            'dipTankID': 1,
+                            'dipQuantity': total_dips_tank1_ago_branch1
+                        })
+
+                    # Commit changes
+                    conn.commit()
+
+                    # Close connection
+                    conn.close()
+
+                    continue
+
+                else:
+                    print("Entries before: ", entries)
+                    entries -= 1
+                    print("Entries after: ", entries)
+                                  
+                    currentLastDipIDBranch1 += 1 #adds one to the last dipID
+                                                
+                    # Creating a database or connect to one
+                    conn = sqlite3.connect('petrolstation.db')
+
+                    # Create a cursor
+                    c = conn.cursor()
+                    print("this is ago 2")
+
+                    # Updating the tblDip table                    
+                    c.execute("INSERT INTO tblDips VALUES (:dipID, :dipDate, :dipBranchID, :dipProductID, :dipTankID, :dipQuantity)",
+                        {
+                            'dipID': currentLastDipIDBranch1,
+                            'dipDate': currentDateBranch1,
+                            'dipBranchID': 1,
+                            'dipProductID': 2,
+                            'dipTankID': 2,
+                            'dipQuantity': total_dips_tank2_ago_branch1
+                        })
+
+                    # Commit changes
+                    conn.commit()
+
+                    # Close connection
+                    conn.close()
+
+            # V) Exiting the Dips Window
+            editor_dips_branch1.destroy()
+            
         
         # Creating Labels
                 

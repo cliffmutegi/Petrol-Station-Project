@@ -450,13 +450,14 @@ c.execute("""DROP TABLE IF EXISTS tblDips""")
 #commit our command
 conn.commit()
 
-#Create table tblDips 
+'''#Create table tblDips 
 c.execute("""CREATE TABLE tblDips (
         dipID integer PRIMARY KEY,
         dipDate date,
         dipBranchID integer,
         dipProductID integer,
         dipTankID integer,
+        dipQuantity float,
         FOREIGN KEY(dipBranchID) REFERENCES tblBranches(branchID),
         FOREIGN KEY(dipProductID) REFERENCES tblProducts(productID),
         FOREIGN KEY(dipTankID) REFERENCES tblTanks(tankID)
@@ -466,7 +467,7 @@ c.execute("""CREATE TABLE tblDips (
 conn.commit()
 
 
-# 20 TBLDAILYCOLLECTION
+'''# 20 TBLDAILYCOLLECTION
 #Delete table tblDailyCollection if it exists
 c.execute("""DROP TABLE IF EXISTS tblDailyCollection""")
 
