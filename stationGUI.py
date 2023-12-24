@@ -19,7 +19,7 @@ c = conn.cursor()
 
 # Getting branch values from table branches
 branchList =[]
-c.execute("SELECT branchName FROM tblBranches")
+c.execute("SELECT branName FROM tblBran")
 
 branches = c.fetchall()
 #print(branches)
@@ -44,7 +44,7 @@ def branchFtn():
     editor_branch1.title('Enter Branch Place Data') #this is the title of the window
     editor_branch1.geometry("1000x1000") #specifying the size of the root window
 
-    # Retrieving and saving the previous indexes
+    # Retrieving and saving the previous Index
     
     # Creating a database or connect to one
     conn = sqlite3.connect('petrolstation.db')
@@ -52,29 +52,29 @@ def branchFtn():
     # Create a cursor
     c = conn.cursor()
     
-    c.execute("SELECT *, oid FROM tblIndexes WHERE indexDate IN (SELECT MAX(indexDate) FROM tblIndexes)") #oid means include the default primary key. MAX(indexDate) ensures we only return results from the last date entered
+    c.execute("SELECT *, oid FROM tblIndex WHERE indexDate IN (SELECT MAX(indexDate) FROM tblIndex)") #oid means include the default primary key. MAX(indexDate) ensures we only return results from the last date entered
     records = c.fetchall() #this will store all the records
     #print(records) #this will print the records in the terminal
 
     # Declare and initialize global variables
-    global ClosingIndexesLstBranch1
+    global ClosingIndexLstBranch1
     global LastIndexIDLstBranch1
     global LastIndexIDBranch1
 
-    ClosingIndexesLstBranch1 = []
+    ClosingIndexLstBranch1 = []
     LastIndexIDLstBranch1 = []
     LastIndexIDBranch1 = 0
     
-    # Retrieving closing indexes and assigning them to branch1ClosingIndexesLst
+    # Retrieving closing Index and assigning them to branch1ClosingIndexLst
     for record in records:
         index = record[6]
         #print("index: ", type(index), index)
-        ClosingIndexesLstBranch1.append(index)
-        #print("closingIndexLst: ", type(closingIndexesLst), closingIndexesLst)
+        ClosingIndexLstBranch1.append(index)
+        #print("closingIndexLst: ", type(closingIndexLst), closingIndexLst)
 
-    #print("Printing closing indexes List:\n", branch1ClosingIndexesLst)
+    #print("Printing closing Index List:\n", branch1ClosingIndexLst)
 
-    # Retrieving the last IndexID from tblIndexes
+    # Retrieving the last IndexID from tblIndex
     for record in records:
         indexID = record[0]
         LastIndexIDLstBranch1.append(indexID)
@@ -107,110 +107,110 @@ def branchFtn():
         # Create a cursor
         c = conn.cursor()
     
-        # Insert entered indexes into tblIndexes in the database
+        # Insert entered Index into tblIndex in the database
 
         # Using if/else to fill data for the three pumps without repetition
-        # Closing Index values are taken from the branch1ClosingIndexesLst
+        # Closing Index values are taken from the branch1ClosingIndexLst
         
         total_day_pms_liters_branch1 = 0 #this variable will be used in calculating the total pms liters sold for a particular day
         total_day_ago_liters_branch1 = 0 #this variable will be used in calculating the total ago liters sold for a particular day
         
         currentDateBranch1 = date_editor_branch1.get()
 
-        while len(ClosingIndexesLstBranch1) > 0: #this ensures that all the indexes are uploaded to the tblIndexes
-            if len(ClosingIndexesLstBranch1) == 6:
+        while len(ClosingIndexLstBranch1) > 0: #this ensures that all the Index are uploaded to the tblIndex
+            if len(ClosingIndexLstBranch1) == 6:
                 LastIndexID_branch1 += 1
                 #print(LastIndexID_branch1)
                             
-                c.execute("INSERT INTO tblIndexes VALUES (:indexID, :indexDate, :indexBranchID, :indexProductID, :indexPumpNumber, :openingIndex, :closingIndex)",
+                c.execute("INSERT INTO tblIndex VALUES (:indexID, :indexDate, :indexBranID, :indexProdID, :indexPumpNumber, :openingIndex, :closingIndex)",
                     {
                         'indexID': LastIndexID_branch1,
                         'indexDate': date_editor_branch1.get(),
-                        'indexBranchID': 1,
-                        'indexProductID': 1,
+                        'indexBranID': 1,
+                        'indexProdID': 1,
                         'indexPumpNumber': pump1_editor_branch1.get(),
-                        'openingIndex': ClosingIndexesLstBranch1[0],
+                        'openingIndex': ClosingIndexLstBranch1[0],
                         'closingIndex': pump1_pms_editor_branch1.get()
                     })
-                total_day_pms_liters_branch1 = (float(pump1_pms_editor_branch1.get()) - ClosingIndexesLstBranch1[0])
+                total_day_pms_liters_branch1 = (float(pump1_pms_editor_branch1.get()) - ClosingIndexLstBranch1[0])
                 #print("Pump 1 PMS: ", branch1_total_day_pms_liters)
-                ClosingIndexesLstBranch1.pop(0)
+                ClosingIndexLstBranch1.pop(0)
                 LastIndexID_branch1 += 1
                 #print(LastIndexID_branch1)
-            elif len(ClosingIndexesLstBranch1) == 5:
-                c.execute("INSERT INTO tblIndexes VALUES (:indexID, :indexDate, :indexBranchID, :indexProductID, :indexPumpNumber, :openingIndex, :closingIndex)",
+            elif len(ClosingIndexLstBranch1) == 5:
+                c.execute("INSERT INTO tblIndex VALUES (:indexID, :indexDate, :indexBranID, :indexProdID, :indexPumpNumber, :openingIndex, :closingIndex)",
                     {
                         'indexID': LastIndexID_branch1,
                         'indexDate': date_editor_branch1.get(),
-                        'indexBranchID': 1,
-                        'indexProductID': 2,
+                        'indexBranID': 1,
+                        'indexProdID': 2,
                         'indexPumpNumber': pump1_editor_branch1.get(),
-                        'openingIndex': ClosingIndexesLstBranch1[0],
+                        'openingIndex': ClosingIndexLstBranch1[0],
                         'closingIndex': pump1_ago_editor_branch1.get()
                     })
-                total_day_ago_liters_branch1 = (float(pump1_ago_editor_branch1.get()) - ClosingIndexesLstBranch1[0])
+                total_day_ago_liters_branch1 = (float(pump1_ago_editor_branch1.get()) - ClosingIndexLstBranch1[0])
                 #print("Pump 1 AGO: ", branch1_total_day_ago_liters)
-                ClosingIndexesLstBranch1.pop(0)
+                ClosingIndexLstBranch1.pop(0)
                 LastIndexID_branch1 += 1
                 #print(LastIndexID_branch1)
-            elif len(ClosingIndexesLstBranch1) == 4:
-                c.execute("INSERT INTO tblIndexes VALUES (:indexID, :indexDate, :indexBranchID, :indexProductID, :indexPumpNumber, :openingIndex, :closingIndex)",
+            elif len(ClosingIndexLstBranch1) == 4:
+                c.execute("INSERT INTO tblIndex VALUES (:indexID, :indexDate, :indexBranID, :indexProdID, :indexPumpNumber, :openingIndex, :closingIndex)",
                     {
                         'indexID': LastIndexID_branch1,
                         'indexDate': date_editor_branch1.get(),
-                        'indexBranchID': 1,
-                        'indexProductID': 1,
+                        'indexBranID': 1,
+                        'indexProdID': 1,
                         'indexPumpNumber': pump2_editor_branch1.get(),
-                        'openingIndex': ClosingIndexesLstBranch1[0],
+                        'openingIndex': ClosingIndexLstBranch1[0],
                         'closingIndex': pump2_pms_editor_branch1.get()
                     })
-                total_day_pms_liters_branch1 = total_day_pms_liters_branch1 + (float(pump2_pms_editor_branch1.get()) - ClosingIndexesLstBranch1[0])
-                ClosingIndexesLstBranch1.pop(0)
+                total_day_pms_liters_branch1 = total_day_pms_liters_branch1 + (float(pump2_pms_editor_branch1.get()) - ClosingIndexLstBranch1[0])
+                ClosingIndexLstBranch1.pop(0)
                 LastIndexID_branch1 += 1
                 #print(LastIndexID_branch1)
-            elif len(ClosingIndexesLstBranch1) == 3:
-                c.execute("INSERT INTO tblIndexes VALUES (:indexID, :indexDate, :indexBranchID, :indexProductID, :indexPumpNumber, :openingIndex, :closingIndex)",
+            elif len(ClosingIndexLstBranch1) == 3:
+                c.execute("INSERT INTO tblIndex VALUES (:indexID, :indexDate, :indexBranID, :indexProdID, :indexPumpNumber, :openingIndex, :closingIndex)",
                     {
                         'indexID': LastIndexID_branch1,
                         'indexDate': date_editor_branch1.get(),
-                        'indexBranchID': 1,
-                        'indexProductID': 2,
+                        'indexBranID': 1,
+                        'indexProdID': 2,
                         'indexPumpNumber': pump2_editor_branch1.get(),
-                        'openingIndex': ClosingIndexesLstBranch1[0],
+                        'openingIndex': ClosingIndexLstBranch1[0],
                         'closingIndex': pump2_ago_editor_branch1.get()
                     })
-                total_day_ago_liters_branch1 = total_day_ago_liters_branch1 + (float(pump2_ago_editor_branch1.get()) - ClosingIndexesLstBranch1[0])
-                ClosingIndexesLstBranch1.pop(0)
+                total_day_ago_liters_branch1 = total_day_ago_liters_branch1 + (float(pump2_ago_editor_branch1.get()) - ClosingIndexLstBranch1[0])
+                ClosingIndexLstBranch1.pop(0)
                 LastIndexID_branch1 += 1
                 #print(LastIndexID_branch1)
-            elif len(ClosingIndexesLstBranch1) == 2:
-                c.execute("INSERT INTO tblIndexes VALUES (:indexID, :indexDate, :indexBranchID, :indexProductID, :indexPumpNumber, :openingIndex, :closingIndex)",
+            elif len(ClosingIndexLstBranch1) == 2:
+                c.execute("INSERT INTO tblIndex VALUES (:indexID, :indexDate, :indexBranID, :indexProdID, :indexPumpNumber, :openingIndex, :closingIndex)",
                     {
                         'indexID': LastIndexID_branch1,
                         'indexDate': date_editor_branch1.get(),
-                        'indexBranchID': 1,
-                        'indexProductID': 1,
+                        'indexBranID': 1,
+                        'indexProdID': 1,
                         'indexPumpNumber': pump3_editor_branch1.get(),
-                        'openingIndex': ClosingIndexesLstBranch1[0],
+                        'openingIndex': ClosingIndexLstBranch1[0],
                         'closingIndex': pump3_pms_editor_branch1.get()
                     })
-                total_day_pms_liters_branch1 = total_day_pms_liters_branch1 + (float(pump3_pms_editor_branch1.get()) - ClosingIndexesLstBranch1[0])
-                ClosingIndexesLstBranch1.pop(0)
+                total_day_pms_liters_branch1 = total_day_pms_liters_branch1 + (float(pump3_pms_editor_branch1.get()) - ClosingIndexLstBranch1[0])
+                ClosingIndexLstBranch1.pop(0)
                 LastIndexID_branch1 += 1
                 #print(LastIndexID_branch1)
-            elif len(ClosingIndexesLstBranch1) == 1:
-                c.execute("INSERT INTO tblIndexes VALUES (:indexID, :indexDate, :indexBranchID, :indexProductID, :indexPumpNumber, :openingIndex, :closingIndex)",
+            elif len(ClosingIndexLstBranch1) == 1:
+                c.execute("INSERT INTO tblIndex VALUES (:indexID, :indexDate, :indexBranID, :indexProdID, :indexPumpNumber, :openingIndex, :closingIndex)",
                     {
                         'indexID': LastIndexID_branch1,
                         'indexDate': date_editor_branch1.get(),
-                        'indexBranchID': 1,
-                        'indexProductID': 2,
+                        'indexBranID': 1,
+                        'indexProdID': 2,
                         'indexPumpNumber': pump3_editor_branch1.get(),
-                        'openingIndex': ClosingIndexesLstBranch1[0],
+                        'openingIndex': ClosingIndexLstBranch1[0],
                         'closingIndex': pump3_ago_editor_branch1.get()
                     })
-                total_day_ago_liters_branch1 = total_day_ago_liters_branch1 + (float(pump3_ago_editor_branch1.get()) - ClosingIndexesLstBranch1[0])
-                ClosingIndexesLstBranch1.pop(0)
+                total_day_ago_liters_branch1 = total_day_ago_liters_branch1 + (float(pump3_ago_editor_branch1.get()) - ClosingIndexLstBranch1[0])
+                ClosingIndexLstBranch1.pop(0)
                 #print(LastIndexID_branch1)
                 
         # Commit changes
@@ -331,14 +331,14 @@ def branchFtn():
                         c = conn.cursor()
                         #print("this is pms 1")
                         # Updating the tblReturnedFuel table                    
-                        c.execute("INSERT INTO tblReturnedFuel VALUES (:returnedFuelID, :returnedFuelDate, :returnedFuelBranchID, :returnedFuelProductID, :returnedFuelPumpID, :returnedFuelLiters)",
+                        c.execute("INSERT INTO tblReturnedFuel VALUES (:returnedFuelID, :returnedFuelDate, :returnedFuelBranID, :returnedFuelProdID, :returnedFuelPumpID, :returnedFuelLtr)",
                             {
                                 'returnedFuelID': currentLastReturnedFuelID,
                                 'returnedFuelDate': currentDateBranch1,
-                                'returnedFuelBranchID': 1,
-                                'returnedFuelProductID': 1,
+                                'returnedFuelBranID': 1,
+                                'returnedFuelProdID': 1,
                                 'returnedFuelPumpID': fuel_returned_pump_pms.get(),
-                                'returnedFuelLiters': fuel_returned_pms_branch1.get()
+                                'returnedFuelLtr': fuel_returned_pms_branch1.get()
                             })
 
                         # Commit changes
@@ -374,14 +374,14 @@ def branchFtn():
                         c = conn.cursor()
                         #print("ago 1")
                         # Updating the tblReturnedFuel table                      
-                        c.execute("INSERT INTO tblReturnedFuel VALUES (:returnedFuelID, :returnedFuelDate, :returnedFuelBranchID, :returnedFuelProductID, :returnedFuelPumpID, :returnedFuelLiters)",
+                        c.execute("INSERT INTO tblReturnedFuel VALUES (:returnedFuelID, :returnedFuelDate, :returnedFuelBranID, :returnedFuelProdID, :returnedFuelPumpID, :returnedFuelLtr)",
                                 {
                                     'returnedFuelID': currentLastReturnedFuelID,
                                     'returnedFuelDate': currentDateBranch1,
-                                    'returnedFuelBranchID': 1,
-                                    'returnedFuelProductID': 2,
+                                    'returnedFuelBranID': 1,
+                                    'returnedFuelProdID': 2,
                                     'returnedFuelPumpID': fuel_returned_pump_ago.get(),
-                                    'returnedFuelLiters': fuel_returned_ago_branch1.get()
+                                    'returnedFuelLtr': fuel_returned_ago_branch1.get()
                                 })
 
                         # Commit changes
@@ -496,7 +496,7 @@ def branchFtn():
         # Create a cursor
         c = conn.cursor()
         
-        c.execute("SELECT *, oid FROM tblInterBranchSupply WHERE interBranchSupplyID IN (SELECT MAX(interBranchSupplyID) FROM tblInterBranchSupply)") #oid means include the default primary key. MAX(interBranchSupplyID) ensures we only return results from the last id entered
+        c.execute("SELECT *, oid FROM tblInterBranSupply WHERE interBranSupplyID IN (SELECT MAX(interBranSupplyID) FROM tblInterBranSupply)") #oid means include the default primary key. MAX(interBranchSupplyID) ensures we only return results from the last id entered
         interBranchSupplyRecords = c.fetchall() #this will store all the records
         #print("Printing interBranchSupplyRecords: ", interBranchSupplyRecords) #this will print the records in the terminal
 
@@ -527,7 +527,7 @@ def branchFtn():
         # Create a cursor
         c = conn.cursor()
         
-        c.execute("SELECT *, oid FROM tblMainSupplyStockToBranch WHERE supplyStockID IN (SELECT MAX(supplyStockID) FROM tblMainSupplyStockToBranch)") #oid means include the default primary key. MAX(supplyStockID) ensures we only return results from the last id entered
+        c.execute("SELECT *, oid FROM tblMainSupplyStockToBran WHERE supplyStockID IN (SELECT MAX(supplyStockID) FROM tblMainSupplyStockToBran)") #oid means include the default primary key. MAX(supplyStockID) ensures we only return results from the last id entered
         supplyToBranchRecords = c.fetchall() #this will store all the records
         #print("Printing supplyToBranchRecords: ", supplyToBranchRecords) #this will print the records in the terminal
 
@@ -567,10 +567,10 @@ def branchFtn():
             # Create a cursor
             c = conn.cursor()
             
-            c.execute("SELECT *, oid FROM tblMainSupplyStock WHERE ((mainSupplyDate = :UserDate OR mainSupplyDate < :UserDate) AND mainSupplyProductID = :UserProductID AND mainSupplyTruckNumber = :UserTruckNo)",
+            c.execute("SELECT *, oid FROM tblMainSupplyStock WHERE ((mainSupplyDate = :UserDate OR mainSupplyDate < :UserDate) AND mainSupplyProdID = :UserProdID AND mainSupplyTruckNumber = :UserTruckNo)",
                     {
                         'UserDate': userDate,
-                        'UserProductID': product,
+                        'UserProdID': product,
                         'UserTruckNo': truckNo
                         
                     }) #finds data where a supply happened the samedate or later than the supply truck arrival date
@@ -639,15 +639,15 @@ def branchFtn():
                         c = conn.cursor()
                         #print("this is pms 1")
 
-                        # Updating the tblInterBranchSupply table                    
-                        c.execute("INSERT INTO tblInterBranchSupply VALUES (:interBranchSupplyID, :interBranchSupplyDate, :interBranchReceivingBranchID, :interBranchSupplyingBranchID, :mainSupplyStockID, :interBranchSupplyLiters)",
+                        # Updating the tblInterBranSupply table                    
+                        c.execute("INSERT INTO tblInterBranSupply VALUES (:interBranSupplyID, :interBranSupplyDate, :interBranReceivingBranID, :interBranSupplyingBranID, :mainSupplyStockID, :interBranSupplyLtr)",
                             {
-                                'interBranchSupplyID': currentLastInterBranchSupplyIDBranch1,
-                                'interBranchSupplyDate': currentDateBranch1,
-                                'interBranchReceivingBranchID': 1,
-                                'interBranchSupplyingBranchID': restock_branch_source_pms_branch1.get(),
+                                'interBranSupplyID': currentLastInterBranchSupplyIDBranch1,
+                                'interBranSupplyDate': currentDateBranch1,
+                                'interBranReceivingBranID': 1,
+                                'interBranSupplyingBranID': restock_branch_source_pms_branch1.get(),
                                 'mainSupplyStockID': fuel_returned_pump_pms.get(),
-                                'interBranchSupplyLiters': restock_amount_pms_branch1.get()
+                                'interBranchSupplyLtr': restock_amount_pms_branch1.get()
                             })
 
                         # Commit changes
@@ -684,12 +684,12 @@ def branchFtn():
                         #print("pms 1 truck")
 
                         # Updating the tblMainSupplyStockToBranch table                      
-                        c.execute("INSERT INTO tblMainSupplyStockToBranch VALUES (:supplyStockID, :supplyStockDate, :mainSupplyID, :supplyStockLiters)",
+                        c.execute("INSERT INTO tblMainSupplyStockToBran VALUES (:supplyStockID, :supplyStockDate, :mainSupplyID, :supplyStockLtr)",
                                 {
                                     'supplyStockID': currentLastSupplyStockIDBranch1,
                                     'supplyStockDate': currentDateBranch1,
                                     'mainSupplyID': ComputeMainSupplyIDTruckSuppliesFtn(currentDateBranch1, 1, restock_truck_pms_branch1.get()),
-                                    'supplyStockLiters': restock_amount_pms_branch1.get()
+                                    'supplyStockLtr': restock_amount_pms_branch1.get()
                                 })
 
                         # Commit changes
@@ -724,15 +724,15 @@ def branchFtn():
                         c = conn.cursor()
                         #print("this is ago 1")
 
-                        # Updating the tblInterBranchSupply table                    
-                        c.execute("INSERT INTO tblInterBranchSupply VALUES (:interBranchSupplyID, :interBranchSupplyDate, :interBranchReceivingBranchID, :interBranchSupplyingBranchID, :mainSupplyStockID, :interBranchSupplyLiters)",
+                        # Updating the tblInterBranSupply table                    
+                        c.execute("INSERT INTO tblInterBranSupply VALUES (:interBranSupplyID, :interBranSupplyDate, :interBranReceivingBranID, :interBranSupplyingBranID, :mainSupplyStockID, :interBranSupplyLtr)",
                             {
-                                'interBranchSupplyID': currentLastInterBranchSupplyIDBranch1,
-                                'interBranchSupplyDate': currentDateBranch1,
-                                'interBranchReceivingBranchID': 1,
-                                'interBranchSupplyingBranchID': restock_branch_source_ago_branch1.get(),
+                                'interBranSupplyID': currentLastInterBranchSupplyIDBranch1,
+                                'interBranSupplyDate': currentDateBranch1,
+                                'interBranReceivingBranID': 1,
+                                'interBranSupplyingBranID': restock_branch_source_ago_branch1.get(),
                                 'mainSupplyStockID': fuel_returned_pump_pms.get(),
-                                'interBranchSupplyLiters': restock_amount_ago_branch1.get()
+                                'interBranSupplyLtr': restock_amount_ago_branch1.get()
                             })
 
                         # Commit changes
@@ -769,12 +769,12 @@ def branchFtn():
                         #print("ago 1 truck")
 
                         # Updating the tblMainSupplyStockToBranch table                      
-                        c.execute("INSERT INTO tblMainSupplyStockToBranch VALUES (:supplyStockID, :supplyStockDate, :mainSupplyID, :supplyStockLiters)",
+                        c.execute("INSERT INTO tblMainSupplyStockToBran VALUES (:supplyStockID, :supplyStockDate, :mainSupplyID, :supplyStockLtr)",
                                 {
                                     'supplyStockID': currentLastSupplyStockIDBranch1,
                                     'supplyStockDate': currentDateBranch1,
                                     'mainSupplyID': ComputeMainSupplyIDTruckSuppliesFtn(currentDateBranch1, 2, restock_truck_ago_branch1.get()),
-                                    'supplyStockLiters': restock_amount_ago_branch1.get()
+                                    'supplyStockLtr': restock_amount_ago_branch1.get()
                                 })
 
                         # Commit changes
@@ -1000,7 +1000,7 @@ def branchFtn():
             # Create a cursor
             c = conn.cursor()
             
-            c.execute("SELECT *, oid FROM tblDips WHERE dipID IN (SELECT MAX(dipID) FROM tblDips)") #oid means include the default primary key. MAX(dipID) ensures we only return results from the last id entered
+            c.execute("SELECT *, oid FROM tblDip WHERE dipID IN (SELECT MAX(dipID) FROM tblDip)") #oid means include the default primary key. MAX(dipID) ensures we only return results from the last id entered
             dipsRecords = c.fetchall() #this will store all the records
             print("Printing dipsRecords: ", dipsRecords) #this will print the records in the terminal
 
@@ -1049,14 +1049,14 @@ def branchFtn():
                     print("this is pms 1")
 
                     # Updating the tblDip table                    
-                    c.execute("INSERT INTO tblDips VALUES (:dipID, :dipDate, :dipBranchID, :dipProductID, :dipTankID, :dipQuantity)",
+                    c.execute("INSERT INTO tblDip VALUES (:dipID, :dipDate, :dipBranID, :dipProdID, :dipTankID, :dipQty)",
                         {
                             'dipID': currentLastDipIDBranch1,
                             'dipDate': currentDateBranch1,
-                            'dipBranchID': 1,
-                            'dipProductID': 1,
+                            'dipBranID': 1,
+                            'dipProdID': 1,
                             'dipTankID': 1,
-                            'dipQuantity': total_dips_tank1_pms_branch1
+                            'dipQty': total_dips_tank1_pms_branch1
                         })
 
                     # Commit changes
@@ -1082,14 +1082,14 @@ def branchFtn():
                     print("this is ago 1")
 
                     # Updating the tblDip table                    
-                    c.execute("INSERT INTO tblDips VALUES (:dipID, :dipDate, :dipBranchID, :dipProductID, :dipTankID, :dipQuantity)",
+                    c.execute("INSERT INTO tblDip VALUES (:dipID, :dipDate, :dipBranID, :dipProdID, :dipTankID, :dipQty)",
                         {
                             'dipID': currentLastDipIDBranch1,
                             'dipDate': currentDateBranch1,
-                            'dipBranchID': 1,
-                            'dipProductID': 2,
+                            'dipBranID': 1,
+                            'dipProdID': 2,
                             'dipTankID': 1,
-                            'dipQuantity': total_dips_tank1_ago_branch1
+                            'dipQty': total_dips_tank1_ago_branch1
                         })
 
                     # Commit changes
@@ -1115,14 +1115,14 @@ def branchFtn():
                     print("this is ago 2")
 
                     # Updating the tblDip table                    
-                    c.execute("INSERT INTO tblDips VALUES (:dipID, :dipDate, :dipBranchID, :dipProductID, :dipTankID, :dipQuantity)",
+                    c.execute("INSERT INTO tblDip VALUES (:dipID, :dipDate, :dipBranID, :dipProdID, :dipTankID, :dipQty)",
                         {
                             'dipID': currentLastDipIDBranch1,
                             'dipDate': currentDateBranch1,
-                            'dipBranchID': 1,
-                            'dipProductID': 2,
+                            'dipBranID': 1,
+                            'dipProdID': 2,
                             'dipTankID': 2,
-                            'dipQuantity': total_dips_tank2_ago_branch1
+                            'dipQty': total_dips_tank2_ago_branch1
                         })
 
                     # Commit changes

@@ -465,7 +465,7 @@ c.execute("""CREATE TABLE tblDip (
         dipBranID integer,
         dipProdID integer,
         dipTankID integer,
-        dipQuantity float,
+        dipQty float,
         FOREIGN KEY(dipBranID) REFERENCES tblBran(BranID),
         FOREIGN KEY(dipProdID) REFERENCES tblProd(ProdID),
         FOREIGN KEY(dipTankID) REFERENCES tblTank(tankID)
