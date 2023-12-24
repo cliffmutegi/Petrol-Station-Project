@@ -12,410 +12,418 @@ c = conn.cursor()
 '''#TABLES
 
 
-# 1 TBLCURRENCY
-#Delete table tblCurrency if it exists
-c.execute("""DROP TABLE IF EXISTS tblCurrency""")
+# 1 TBLCURRENCY # CURRENCY
+#Delete table tblCurr if it exists
+c.execute("""DROP TABLE IF EXISTS tblCurr""")
 
 #commit our command
 conn.commit()
 
-#Create table tblCurrency 
-c.execute("""CREATE TABLE tblCurrency (
-        currencyID integer PRIMARY KEY AUTOINCREMENT,
-        currencySymbol text,
-        currencyName text
+#Create table tblCurr 
+c.execute("""CREATE TABLE tblCurr (
+        currID integer PRIMARY KEY,
+        currSymbol text,
+        currName text
     )""")
 
 #commit our command
 conn.commit()
 
 
-# 2 TBLBRANCHES
-#Delete table tblBranches if it exists
-c.execute("""DROP TABLE IF EXISTS tblBranches""")
+# 2 TBLBran # BRANCH
+#Delete table tblBran if it exists
+c.execute("""DROP TABLE IF EXISTS tblBran""")
 
 #commit our command
 conn.commit()
 
-#Create table tblBranches 
-c.execute("""CREATE TABLE tblBranches (
-        branchID integer PRIMARY KEY AUTOINCREMENT,
-        branchName text
+#Create table tblBran 
+c.execute("""CREATE TABLE tblBran (
+        branID integer PRIMARY KEY,
+        branName text
     )""")
 
 #commit our command
 conn.commit()
 
 
-# 3 TBLPRODUCTS
-#Delete table tblProducts if it exists
-c.execute("""DROP TABLE IF EXISTS tblProducts""")
+# 3 TBLProd # PRODUCTS
+#Delete table tblProd if it exists
+c.execute("""DROP TABLE IF EXISTS tblProd""")
 
 #commit our command
 conn.commit()
 
-#Create table tblProducts 
-c.execute("""CREATE TABLE tblProducts (
-        productID integer PRIMARY KEY AUTOINCREMENT,
-        productName text
+#Create table tblProd 
+c.execute("""CREATE TABLE tblProd (
+        prodID integer PRIMARY KEY AUTOINCREMENT,
+        prodName text
     )""")
 
 #commit our command
 conn.commit()
 
 
-# 4 TBLPRODUCTDETAILS
-#Delete table tblProductDetails if it exists
-c.execute("""DROP TABLE IF EXISTS tblProductDetails""")
+# 4 TBLPRODDETAILS
+#Delete table tblProdDetails if it exists
+c.execute("""DROP TABLE IF EXISTS tblProdDetails""")
 
 #commit our command
 conn.commit()
 
-#Create table tblProductDetails 
-c.execute("""CREATE TABLE tblProductDetails (
-        productDetailID integer PRIMARY KEY,
-        productID integer
-        productName text,
-        productCurrencyID integer,
-        branchID integer,
-        productWholesalePrice money,
-        productPumpPrice money,
-        productSpecialPrice money,
-        productPriceDate date,
-        FOREIGN KEY(productID) REFERENCES tblProduct(productID),
-        FOREIGN KEY(productCurrencyID) REFERENCES tblCurrency(currencyID),
-        FOREIGN KEY(branchID) REFERENCES tblBranches(branchID)
+#Create table tblProdDetails 
+c.execute("""CREATE TABLE tblProdDetails (
+        prodDetailID integer PRIMARY KEY,
+        prodID integer
+        prodName text,
+        prodCurrID integer,
+        branID integer,
+        prodWholesalePrice money,
+        prodPumpPrice money,
+        ProdpecialPrice money,
+        prodPriceDate date,
+        FOREIGN KEY(prodID) REFERENCES tblProd(prodID),
+        FOREIGN KEY(prodCurrID) REFERENCES tblCurr(currID),
+        FOREIGN KEY(branID) REFERENCES tblBran(branID)
     )""")
 
 #commit our command
 conn.commit()
 
 
-# 5 TBLINDEXES
-#Delete table tblIndexes if it exists
-c.execute("""DROP TABLE IF EXISTS tblIndexes""")
+# 5 TBLINDEX
+#Delete table tblIndex if it exists
+c.execute("""DROP TABLE IF EXISTS tblIndex""")
 
 #commit our command
 conn.commit()
 
 #Create table tblIndexes 
-c.execute("""CREATE TABLE tblIndexes (
+c.execute("""CREATE TABLE tblIndex (
         indexID integer PRIMARY KEY,
         indexDate date,
-        indexBranchID integer,
-        indexProductID integer,
+        indexBranID integer,
+        indexProdID integer,
         indexPumpNumber integer,
         openingIndex real,
         closingIndex real,
-        FOREIGN KEY(indexProductID) REFERENCES tblProducts(productID),
-        FOREIGN KEY(indexBranchID) REFERENCES tblBranches(branchID)
+        FOREIGN KEY(indexProdID) REFERENCES tblProd(prodID),
+        FOREIGN KEY(indexBranID) REFERENCES tblBran(branID)
     )""")
 
 #commit our command
 conn.commit()
 
 
-# 6 TBLEXCHANGERATE
-#Delete table tblExchangeRate if it exists
-c.execute("""DROP TABLE IF EXISTS tblExchangeRate""")
+# 6 TBLCREDCUST # CREDITCUSTOMER
+#Delete table tblCredCust if it exists
+c.execute("""DROP TABLE IF EXISTS tblCredCust""")
 
 #commit our command
 conn.commit()
 
-#Create table tblExchangeRate 
-c.execute("""CREATE TABLE tblExchangeRate (
-        exchangeRateID integer PRIMARY KEY,
-        exchangeRateDate date,
-        exchangeRateBranchID integer,
-        exchangeRate money,
-        FOREIGN KEY(exchangeRateBranchID) REFERENCES tblBranches(branchID)
+#Create table tblCredCust 
+c.execute("""CREATE TABLE tblCredCust (
+        credCustID integer PRIMARY KEY,
+        credCustName text,
+        credCustOpeningBalDate date,
+        credCustCurrID integer,
+        credCustOpeningBal money,
+        FOREIGN KEY(credCustCurrID) REFERENCES tblCurr(currID)
     )""")
 
 #commit our command
 conn.commit()
 
 
-# 7 TBLCREDITCUSTOMERS
-#Delete table tblCreditCustomers if it exists
-c.execute("""DROP TABLE IF EXISTS tblCreditCustomers""")
+# 7 TBLADVCUST # ADVANCECUSTOMER
+#Delete table tblAdvCust if it exists
+c.execute("""DROP TABLE IF EXISTS tblAdvCust""")
 
 #commit our command
 conn.commit()
 
-#Create table tblCreditCustomers 
-c.execute("""CREATE TABLE tblCreditCustomers (
-        creditCustomerID integer PRIMARY KEY,
-        creditCustomerName text,
-        creditCustomerOpeningBalanceDate date,
-        creditCustomerCurrencyID integer,
-        creditCustomerOpeningBalance money,
-        FOREIGN KEY(creditCustomerCurrencyID) REFERENCES tblCurrency(currencyID)
+#Create table tblAdvCust 
+c.execute("""CREATE TABLE tblAdvCust (
+        advCustID integer PRIMARY KEY,
+        advCustName text,
+        advCustOpeningBalDate date,
+        advCustProdID interger,
+        advCustOpeningLtr real,
+        FOREIGN KEY(advCustProdID) REFERENCES tblProd(prodID)
     )""")
 
 #commit our command
 conn.commit()
 
 
-# 8 TBLDEBTPAYMENT
-#Delete table tblDebtPayment if it exists
-c.execute("""DROP TABLE IF EXISTS tblDebtPayment""")
+# 8 TBLONEOFFCUST
+#Delete table tblOneOffCust if it exists
+c.execute("""DROP TABLE IF EXISTS tblOneOffCust""")
 
 #commit our command
 conn.commit()
 
-#Create table tblDebtPayment 
-c.execute("""CREATE TABLE tblDebtPayment (
-        debtPaymentID integer PRIMARY KEY,
-        debtPaymentDate date,
-        debtPaymentBranchID integer,
-        creditCustomerID integer,
-        debtPaymentCurrencyID integer,
-        debtPaymentAmount money,
-        exchangeRateID integer,
-        FOREIGN KEY(creditCustomerID) REFERENCES tblCreditCustomers(creditCustomerID)
-        FOREIGN KEY(debtPaymentBranchID) REFERENCES tblBranches(branchID),
-        FOREIGN KEY(debtPaymentCurrencyID) REFERENCES tblCurrency(currencyID),
-        FOREIGN KEY(exchangeRateID) REFERENCES tblExchangeRate(exchangeRateID)
+#Create table tblOneOffCust 
+c.execute("""CREATE TABLE tblOneOffCust (
+        oneOffCustID integer PRIMARY KEY,
+        oneOffCustName text,
+        oneOffCustBranID interger,
+        FOREIGN KEY(oneOffCustBranID) REFERENCES tblBran(branID)
     )""")
 
 #commit our command
 conn.commit()
 
 
-# 9 TBLADVANCECUSTOMERS
-#Delete table tblAdvanceCustomers if it exists
-c.execute("""DROP TABLE IF EXISTS tblAdvanceCustomers""")
+# 9 TBLEXRATE
+#Delete table tblExRate if it exists
+c.execute("""DROP TABLE IF EXISTS tblExRate""")
 
 #commit our command
 conn.commit()
 
-#Create table tblAdvanceCustomers 
-c.execute("""CREATE TABLE tblAdvanceCustomers (
-        advanceCustomerID integer PRIMARY KEY,
-        advanceCustomerName text,
-        advanceCustomerOpeningBalanceDate date,
-        advanceCustomerCurrencyID integer,
-        advanceCustomerOpeningBalance money,
-        advanceCustomerOpeningLiters real
+#Create table tblexRate 
+c.execute("""CREATE TABLE tblExRate (
+        exRateID integer PRIMARY KEY,
+        exRateDate date,
+        exRateBranID integer NULL,
+        exRateCredCustID integer NULL,
+        exRateAdvCustID integer NULL,
+        exRateOneOffCustID integer NULL,
+        exRate money,
+        FOREIGN KEY(exRateBranID) REFERENCES tblBran(branID),
+        FOREIGN KEY(exRateCredCustID) REFERENCES tblCredCust(credCustID),
+        FOREIGN KEY(exRateAdvCustID) REFERENCES tblAdvCust(advCustID),
+        FOREIGN KEY(exRateOneOffCustID) REFERENCES tblOneOffCust(oneOffCustID)
     )""")
 
 #commit our command
 conn.commit()
 
 
-# 10 TBLONEOFFCUSTOMERS
-#Delete table tblOneOffCustomers if it exists
-c.execute("""DROP TABLE IF EXISTS tblOneOffCustomers""")
+# 10 TBLDEBTPAY # DEBTPay
+#Delete table tblDebtPay if it exists
+c.execute("""DROP TABLE IF EXISTS tblDebtPay""")
 
 #commit our command
 conn.commit()
 
-#Create table tblOneOffCustomers 
-c.execute("""CREATE TABLE tblOneOffCustomers (
-        oneOffCustomerID integer PRIMARY KEY,
-        oneOffCustomerName text
+#Create table tblDebtPay 
+c.execute("""CREATE TABLE tblDebtPay (
+        debtPayID integer PRIMARY KEY,
+        debtPayDate date,
+        debtPayBranID integer,
+        CredCustID integer,
+        debtPayCurrID integer,
+        debtPayAmt money,
+        debtPayExRateID integer,
+        FOREIGN KEY(CredCustID) REFERENCES tblCredCust(CredCustID)
+        FOREIGN KEY(debtPayBranID) REFERENCES tblBran(branID),
+        FOREIGN KEY(debtPayCurrID) REFERENCES tblCurr(currID),
+        FOREIGN KEY(debtPayExRateID) REFERENCES tblExRate(exRateID)
     )""")
 
 #commit our command
 conn.commit()
 
 
-# 11 TBLADVANCEPAYMENT
-#Delete table tblAdvancePayment if it exists
-c.execute("""DROP TABLE IF EXISTS tblAdvancePayment""")
+# 11 TBLADVPAY
+#Delete table tblAdvPay if it exists
+c.execute("""DROP TABLE IF EXISTS tblAdvPay""")
 
 #commit our command
 conn.commit()
 
-#Create table tblAdvancePayment 
-c.execute("""CREATE TABLE tblAdvancePayment (
-        advancePaymentID integer PRIMARY KEY,
-        advancePaymentDate date,
-        advancePaymentBranchID integer,
-        advanceCustomerID integer,
-        oneOffCustomerID integer,
-        advancePaymentProductID integer,
-        advancePaymentCurrencyID integer,
-        advancePaymentProductPrice money,
-        advancePaymentAmount money,
-        exchangeRateID integer,
-        FOREIGN KEY(advanceCustomerID) REFERENCES tblAdvanceCustomers(advanceCustomerID),
-        FOREIGN KEY(oneOffCustomerID) REFERENCES tblOneOffCustomers(oneOffCustomerID),
-        FOREIGN KEY(advancePaymentProductID) REFERENCES tblProducts(productID),
-        FOREIGN KEY(advancePaymentBranchID) REFERENCES tblBranches(branchID),
-        FOREIGN KEY(advancePaymentCurrencyID) REFERENCES tblCurrency(currencyID),
-        FOREIGN KEY(exchangeRateID) REFERENCES tblExchangeRate(exchangeRateID)
+#Create table tblAdvPay 
+c.execute("""CREATE TABLE tblAdvPay (
+        advPayID integer PRIMARY KEY,
+        advPayDate date,
+        advPayBranID integer,
+        advCustID integer,
+        oneOffCustID integer,
+        advPayProdID integer,
+        advPayCurrID integer,
+        advPayProdPrice money,
+        advPayAmt money,
+        advPayExRateID integer,
+        FOREIGN KEY(advCustID) REFERENCES tblAdvCust(advCustID),
+        FOREIGN KEY(oneOffCustID) REFERENCES tblOneOffCust(oneOffCustID),
+        FOREIGN KEY(advPayProdID) REFERENCES tblProd(prodID),
+        FOREIGN KEY(advPayBranID) REFERENCES tblBran(branID),
+        FOREIGN KEY(advPayCurrID) REFERENCES tblCurr(currID),
+        FOREIGN KEY(advPayExRateID) REFERENCES tblExRate(exRateID)
     )""")
 
 #commit our command
 conn.commit()
 
 
-# 12 TBLSALES
-#Delete table tblSales if it exists
-c.execute("""DROP TABLE IF EXISTS tblSales""")
+# 12 TBLSALE
+#Delete table tblSale if it exists
+c.execute("""DROP TABLE IF EXISTS tblSale""")
 
 #commit our command
 conn.commit()
 
-#Create table tblSales
-c.execute("""CREATE TABLE tblSales (
+#Create table tblSale
+c.execute("""CREATE TABLE tblSale (
         saleID integer PRIMARY KEY,
         saleDate date,
-        saleBranchID integer,
-        saleProductID integer,
-        wholsaleLiters real,
-        pumpSaleLiters real,
-        specialSaleLiters real,
-        creditCustomerID integer,
-        creditCustomerSaleLiters real,
-        advanceCustomerID integer,
-        advanceCustomerSaleLiters real,
-        oneOffCustomerID integer,
-        oneOffCustomerSaleLiters real,
-        indirectCustomerID integer,
-        indirectCustomerSaleLiters real,
-        FOREIGN KEY(saleBranchID) REFERENCES tblBranches(branchID),
-        FOREIGN KEY(saleProductID) REFERENCES tblProducts(productID),
-        FOREIGN KEY(creditCustomerID) REFERENCES tblCreditCustomers(creditCustomerID),
-        FOREIGN KEY(advanceCustomerID) REFERENCES tblAdvanceCustomers(advanceCustomerID),
-        FOREIGN KEY(oneOffCustomerID) REFERENCES tblOneOffCustomers(oneOffCustomerID),
-        FOREIGN KEY(indirectCustomerID) REFERENCES tblIndirectCustomers(indirectCustomerID)
+        saleBranID integer,
+        saleProdID integer,
+        wholsaleLtr real,
+        pumpSaleLtr real,
+        specialSaleLtr real,
+        saleCredCustID integer,
+        credCustSaleLtr real,
+        saleAdvCustID integer,
+        advCustSaleLtr real,
+        saleOneOffCustID integer,
+        oneOffCustSaleLtr real,
+        saleIndirectCustID integer,
+        indirectCustSaleLtr real,
+        FOREIGN KEY(saleBranID) REFERENCES tblBran(branID),
+        FOREIGN KEY(saleProdID) REFERENCES tblProd(prodID),
+        FOREIGN KEY(saleCredCustID) REFERENCES tblCredCust(credCustID),
+        FOREIGN KEY(saleAdvCustID) REFERENCES tblAdvCust(advCustID),
+        FOREIGN KEY(saleOneOffCustID) REFERENCES tblOneOffCust(oneOffCustID),
+        FOREIGN KEY(saleIndirectCustID) REFERENCES tblIndirectCust(indirectCustID)
     )""")
 
 #commit our command
 conn.commit()
 
 
-# 13 TBLCREDITCUSTOMERDETAILS
-#Delete table tblCreditCustomerDetails if it exists
-c.execute("""DROP TABLE IF EXISTS tblCreditCustomerDetails""")
+# 13 TBLCredCustDETAILS
+#Delete table tblCredCustDetails if it exists
+c.execute("""DROP TABLE IF EXISTS tblCredCustDetails""")
 
 #commit our command
 conn.commit()
 
-#Create table tblCreditCustomerDetails 
-c.execute("""CREATE TABLE tblCreditCustomerDetails (
-        creditCustomerDetailID integer PRIMARY KEY,
-        creditCustomerID integer,
-        creditCustomerProductID integer,
-        creditCustomerCurrencyID integer,
-        creditCustomerPrice money,
-        creditCustomerPriceDate date,
+#Create table tblCredCustDetails 
+c.execute("""CREATE TABLE tblCredCustDetails (
+        credCustDetailID integer PRIMARY KEY,
+        credCustID integer,
+        credCustProdID integer,
+        credCustCurrID integer,
+        credCustPrice money,
+        credCustPriceDate date,
         saleID integer,
-        indirectCustomerID integer,
-        debtPaymentID integer,
-        CreditCustomerCurrentBalance money,
-        CreditCustomerCurrentBalanceDate date,
-        FOREIGN KEY(creditCustomerID) REFERENCES tblCreditCustomers(creditCustomerID),
-        FOREIGN KEY(creditCustomerProductID) REFERENCES tblProducts(productID),
-        FOREIGN KEY(creditCustomerCurrencyID) REFERENCES tblCurrency(currencyID),
-        FOREIGN KEY(saleID) REFERENCES tblSales(saleID),
-        FOREIGN KEY(indirectCustomerID) REFERENCES tblDebtPayment(indirectCustomerID),
-        FOREIGN KEY(debtPaymentID) REFERENCES tblDebtPayment(debtPaymentID)
+        indirectCustID integer,
+        debtPayID integer,
+        credCustCurrentBal money,
+        credCustCurrentBalDate date,
+        FOREIGN KEY(credCustID) REFERENCES tblCredCust(credCustID),
+        FOREIGN KEY(credCustProdID) REFERENCES tblProd(prodID),
+        FOREIGN KEY(credCustProdID) REFERENCES tblCurr(currID),
+        FOREIGN KEY(saleID) REFERENCES tblSale(saleID),
+        FOREIGN KEY(indirectCustID) REFERENCES tblDebtPay(indirectCustID),
+        FOREIGN KEY(debtPayID) REFERENCES tblDebtPay(debtPayID)
     )""")
 
 #commit our command
 conn.commit()
 
 
-# 14 TBLADVANCECUSTOMERDETAILS
-#Delete table tblAdvanceCustomerDetails if it exists
-c.execute("""DROP TABLE IF EXISTS tblAdvanceCustomerDetails""")
+# 14 TBLAdvCustDETAILS
+#Delete table tblAdvCustDetails if it exists
+c.execute("""DROP TABLE IF EXISTS tblAdvCustDetails""")
 
 #commit our command
 conn.commit()
 
-#Create table tblAdvanceCustomerDetails 
-c.execute("""CREATE TABLE tblAdvanceCustomerDetails (
-        advanceCustomerDetailID integer PRIMARY KEY,
-        advanceCustomerID integer,
-        advanceCustomerProductID integer,
-        advanceCustomerCurrencyID integer,
-        advanceCustomerPrice money,
-        advanceCustomerPriceDate date,
-        advancePaymentID integer,
-        indirectCustomerID integer,
+#Create table tblAdvCustDetails 
+c.execute("""CREATE TABLE tblAdvCustDetails (
+        advCustDetailID integer PRIMARY KEY,
+        advCustID integer,
+        advCustProdID integer,
+        advCustCurrID integer,
+        advCustPrice money,
+        advCustPriceDate date,
+        advPayID integer,
+        indirectCustID integer,
         saleID integer,
-        advanceCustomerCurrentLiterBalance integer,
-        advanceCustomerCurrentLiterBalanceDate date,
-        FOREIGN KEY(advanceCustomerID) REFERENCES tblAdvanceCustomers(advanceCustomerID)
-        FOREIGN KEY(advanceCustomerProductID) REFERENCES tblProducts(productID),
-        FOREIGN KEY(advanceCustomerCurrencyID) REFERENCES tblCurrency(currencyID),
-        FOREIGN KEY(advancePaymentID) REFERENCES tblAdvancePayment(advancePaymentID),
-        FOREIGN KEY(saleID) REFERENCES tblSales(saleID)        
+        advCustCurrentLiterBal integer,
+        advCustCurrentLiterBalDate date,
+        FOREIGN KEY(advCustID) REFERENCES tblAdvCust(advCustID)
+        FOREIGN KEY(advCustProdID) REFERENCES tblProd(prodID),
+        FOREIGN KEY(advCustCurrID) REFERENCES tblCurr(currID),
+        FOREIGN KEY(advPayID) REFERENCES tblAdvPay(advPayID),
+        FOREIGN KEY(saleID) REFERENCES tblSale(saleID)        
     )""")
 
 #commit our command
 conn.commit()
 
 
-# 15 TBLONEOFFCUSTOMERDETAIL
-#Delete table tblOneOffCustomerDetail if it exists
-c.execute("""DROP TABLE IF EXISTS tblOneOffCustomerDetail""")
+# 15 TBLONEOFFCustDETAIL
+#Delete table tblOneOffCustDetail if it exists
+c.execute("""DROP TABLE IF EXISTS tblOneOffCustDetail""")
 
 #commit our command
 conn.commit()
 
-#Create table tblOneOffCustomerDetail 
-c.execute("""CREATE TABLE tblOneOffCustomerDetail (
-        oneOffCustomerDetailID integer PRIMARY KEY,
-        oneOffCustomerID integer,
-        advancePaymentID integer,
-        oneOffCustomerCurrentLiterBalance integer,
-        oneOffCustomerCurrentLiterBalanceDate date,
-        oneOffCustomerProductPrice money,
+#Create table tblOneOffCustDetail 
+c.execute("""CREATE TABLE tblOneOffCustDetail (
+        oneOffCustDetailID integer PRIMARY KEY,
+        oneOffCustID integer,
+        advPayID integer,
+        oneOffCustCurrentLiterBal integer,
+        oneOffCustCurrentLiterBalDate date,
+        oneOffCustProdPrice money,
         saleID integer,
-        FOREIGN KEY(oneOffCustomerID) REFERENCES tblOneOffCustomers(oneOffCustomerID),
-        FOREIGN KEY(advancePaymentID) REFERENCES tblAdvancePayment(advancePaymentID),
-        FOREIGN KEY(saleID) REFERENCES tblSales(saleID)
+        FOREIGN KEY(oneOffCustID) REFERENCES tblOneOffCust(oneOffCustID),
+        FOREIGN KEY(advPayID) REFERENCES tblAdvPay(advPayID),
+        FOREIGN KEY(saleID) REFERENCES tblSale(saleID)
     )""")
 
 #commit our command
 conn.commit()
 
 
-# 16 TBLINDIRECTCUSTOMERS
-#Delete table tblIndirectCustomers if it exists
-c.execute("""DROP TABLE IF EXISTS tblIndirectCustomers""")
+# 16 TBLINDIRECTCust
+#Delete table tblIndirectCust if it exists
+c.execute("""DROP TABLE IF EXISTS tblIndirectCust""")
 
 #commit our command
 conn.commit()
 
-#Create table tblIndirectCustomers 
-c.execute("""CREATE TABLE tblIndirectCustomers (
-        indirectCustomerID integer PRIMARY KEY,
-        indirectCustomerName text,
-        indirectCustomerProductID integer,
-        indirectCustomerOpeningBalanceDate date,
-        indirectCustomerOpeningLiters real,
-        FOREIGN KEY(indirectCustomerProductID) REFERENCES tblProducts(productID)
+#Create table tblIndirectCust 
+c.execute("""CREATE TABLE tblIndirectCust (
+        indirectCustID integer PRIMARY KEY,
+        indirectCustName text,
+        indirectCustProdID integer,
+        indirectCustOpeningBalDate date,
+        indirectCustOpeningLtr real,
+        FOREIGN KEY(indirectCustProdID) REFERENCES tblProd(ProdID)
     )""")
 
 #commit our command
 conn.commit()
 
 
-# 17 TBLINDIRECTCUSTOMERDETAIL
-#Delete table tblIndirectCustomerDetail if it exists
-c.execute("""DROP TABLE IF EXISTS tblIndirectCustomerDetail""")
+# 17 TBLINDIRECTCustDETAIL
+#Delete table tblIndirectCustDetail if it exists
+c.execute("""DROP TABLE IF EXISTS tblIndirectCustDetail""")
 
 #commit our command
 conn.commit()
 
-#Create table tblIndirectCustomerDetail 
-c.execute("""CREATE TABLE tblIndirectCustomerDetail (
-        indirectCustomerDetailID integer PRIMARY KEY,
-        indirectCustomerID integer,
-        indirectCustomerCreditDetailSponsorID integer NULL,
-        indirectCustomerAdvanceDetailSponsorID integer NULL,
-        indirectCustomerCurrentLiterBalance real,
-        indirectCustomerCurrentLiterBalanceDate date,
+#Create table tblIndirectCustDetail 
+c.execute("""CREATE TABLE tblIndirectCustDetail (
+        indirectCustDetailID integer PRIMARY KEY,
+        indirectCustID integer,
+        indirectCustCredDetailSponsorID integer NULL,
+        indirectCustAdvDetailSponsorID integer NULL,
+        indirectCustCurrentLiterBal real,
+        indirectCustCurrentLiterBalDate date,
         saleID integer,
-        FOREIGN KEY(indirectCustomerID) REFERENCES tblCreditCustomers(indirectCustomerID),
-        FOREIGN KEY(indirectCustomerCreditDetailSponsorID) REFERENCES tblCreditCustomerDetail(creditCustomerDetailID),
-        FOREIGN KEY(indirectCustomerAdvanceDetailSponsorID) REFERENCES tblAdvanceCustomerDetail(advanceCustomerDetailID),
-        FOREIGN KEY(saleID) REFERENCES tblSales(saleID)
+        FOREIGN KEY(indirectCustID) REFERENCES tblCredCust(indirectCustID),
+        FOREIGN KEY(indirectCustCredDetailSponsorID) REFERENCES tblCredCustDetail(CredCustDetailID),
+        FOREIGN KEY(indirectCustAdvDetailSponsorID) REFERENCES tblAdvCustDetail(AdvCustDetailID),
+        FOREIGN KEY(saleID) REFERENCES tblSale(saleID)
     )""")
 
 #commit our command
@@ -424,50 +432,50 @@ conn.commit()
 
 # 18 TBLTANKS
 #Delete table tblTanks if it exists
-c.execute("""DROP TABLE IF EXISTS tblTanks""")
+c.execute("""DROP TABLE IF EXISTS tblTank""")
 
 #commit our command
 conn.commit()
 
-#Create table tblTanks 
-c.execute("""CREATE TABLE tblTanks (
+#Create table tblTank 
+c.execute("""CREATE TABLE tblTank (
         tankID integer PRIMARY KEY,
-        tankBranchID integer,
-        tankProductID integer,
+        tankBranID integer,
+        tankProdID integer,
         tankCapacity integer,
-        FOREIGN KEY(tankBranchID) REFERENCES tblBranches(branchID),
-        FOREIGN KEY(tankProductID) REFERENCES tblProducts(productID)
+        FOREIGN KEY(tankBranID) REFERENCES tblBran(branID),
+        FOREIGN KEY(tankProdID) REFERENCES tblProd(prodID)
     )""")
 
 #commit our command
 conn.commit()
 
 
-# 19 TBLDIPS
-#Delete table tblDips if it exists
-c.execute("""DROP TABLE IF EXISTS tblDips""")
+# 19 TBLDIP
+#Delete table tblDip if it exists
+c.execute("""DROP TABLE IF EXISTS tblDip""")
 
 #commit our command
 conn.commit()
 
-'''#Create table tblDips 
-c.execute("""CREATE TABLE tblDips (
+#Create table tblDip 
+c.execute("""CREATE TABLE tblDip (
         dipID integer PRIMARY KEY,
         dipDate date,
-        dipBranchID integer,
-        dipProductID integer,
+        dipBranID integer,
+        dipProdID integer,
         dipTankID integer,
         dipQuantity float,
-        FOREIGN KEY(dipBranchID) REFERENCES tblBranches(branchID),
-        FOREIGN KEY(dipProductID) REFERENCES tblProducts(productID),
-        FOREIGN KEY(dipTankID) REFERENCES tblTanks(tankID)
+        FOREIGN KEY(dipBranID) REFERENCES tblBran(BranID),
+        FOREIGN KEY(dipProdID) REFERENCES tblProd(ProdID),
+        FOREIGN KEY(dipTankID) REFERENCES tblTank(tankID)
     )""")
 
 #commit our command
 conn.commit()
 
 
-'''# 20 TBLDAILYCOLLECTION
+# 20 TBLDAILYCOLLECTION
 #Delete table tblDailyCollection if it exists
 c.execute("""DROP TABLE IF EXISTS tblDailyCollection""")
 
@@ -478,20 +486,20 @@ conn.commit()
 c.execute("""CREATE TABLE tblDailyCollection (
         dailyCollectionID integer PRIMARY KEY,
         dailyCollectionDate date,
-        dailyCollectionBranchID integer,
-        dailyCollectionUSDCurrencyID integer,
-        dailyCollectionUSDAmount money,
-        dailyCollectionFCCurrencyID integer,
-        dailyCollectionFCAmount money,
-        exchangeRateID integer,
-        advancePaymentID,
-        debtPaymentID,
-        FOREIGN KEY(dailyCollectionBranchID) REFERENCES tblBranches(branchID),
-        FOREIGN KEY(dailyCollectionUSDCurrencyID) REFERENCES tblCurrency(currencyID),
-        FOREIGN KEY(dailyCollectionFCCurrencyID) REFERENCES tblCurrency(currencyID),        
-        FOREIGN KEY(exchangeRateID) REFERENCES tblExchangeRate(exchangeRateID),
-        FOREIGN KEY(advancePaymentID) REFERENCES tblAdvancePayment(advancePaymentID),
-        FOREIGN KEY(debtPaymentID) REFERENCES tblDebtPayment(debtPaymentID)
+        dailyCollectionBranID integer,
+        dailyCollectionUSDCurrID integer,
+        dailyCollectionUSDAmt money,
+        dailyCollectionFCCurrID integer,
+        dailyCollectionFCAmt money,
+        exRateID integer,
+        advPayID,
+        debtPayID,
+        FOREIGN KEY(dailyCollectionBranID) REFERENCES tblBran(branID),
+        FOREIGN KEY(dailyCollectionUSDCurrID) REFERENCES tblCurr(currID),
+        FOREIGN KEY(dailyCollectionFCCurrID) REFERENCES tblCurr(currID),        
+        FOREIGN KEY(exRateID) REFERENCES tblexRate(exRateID),
+        FOREIGN KEY(advPayID) REFERENCES tblAdvPay(advPayID),
+        FOREIGN KEY(debtPayID) REFERENCES tblDebtPay(debtPayID)
     )""")
 
 #commit our command
@@ -509,32 +517,32 @@ conn.commit()
 c.execute("""CREATE TABLE tblMainSupplyStock (
         mainSupplyID integer PRIMARY KEY,
         mainSupplyDate date,
-        mainSupplyProductID integer,
+        mainSupplyProdID integer,
         mainSupplyTruckNumber integer,
-        mainSupplyCurrencyID,
+        mainSupplyCurrID,
         mainSupplyPurchasePrice money,
-        mainSupplyLiters real,
-        FOREIGN KEY(mainSupplyCurrencyID) REFERENCES tblCurrency(currencyID),
-        FOREIGN KEY(mainSupplyProductID) REFERENCES tblProducts(productID)
+        mainSupplyLtr real,
+        FOREIGN KEY(mainSupplyCurrID) REFERENCES tblCurr(currID),
+        FOREIGN KEY(mainSupplyProdID) REFERENCES tblProd(prodID)
     )""")
 
 #commit our command
 conn.commit()
 
 
-# 22 TBLMAINSUPPLYSTOCKTOBRANCH
-#Delete table tblMainSupplyStockToBranch if it exists
-c.execute("""DROP TABLE IF EXISTS tblMainSupplyStockToBranch""")
+# 22 TBLMAINSUPPLYSTOCKTOBran
+#Delete table tblMainSupplyStockToBran if it exists
+c.execute("""DROP TABLE IF EXISTS tblMainSupplyStockToBran""")
 
 #commit our command
 conn.commit()
 
-#Create table tblMainSupplyStockToBranch
-c.execute("""CREATE TABLE tblMainSupplyStockToBranch (
+#Create table tblMainSupplyStockToBran
+c.execute("""CREATE TABLE tblMainSupplyStockToBran (
         supplyStockID integer PRIMARY KEY,
         supplyStockDate date,
         mainSupplyID integer,
-        supplyStockLiters real,
+        supplyStockLtr real,
         FOREIGN KEY(mainSupplyID) REFERENCES tblMainSupplyStock(mainSupplyID)
     )""")
 
@@ -542,23 +550,23 @@ c.execute("""CREATE TABLE tblMainSupplyStockToBranch (
 conn.commit()
 
 
-# 23 TBLINTERBRANCHSUPPLY
-#Delete table tblInterBranchSupply if it exists
-c.execute("""DROP TABLE IF EXISTS tblInterBranchSupply""")
+# 23 TBLINTERBranSUPPLY
+#Delete table tblInterBranSupply if it exists
+c.execute("""DROP TABLE IF EXISTS tblInterBranSupply""")
 
 #commit our command
 conn.commit()
 
-#Create table tblInterBranchSupply 
-c.execute("""CREATE TABLE tblInterBranchSupply (
-        interBranchSupplyID integer PRIMARY KEY,
-        interBranchSupplyDate date,
-        interBranchReceivingBranchID integer,
-        interBranchSupplyingBranchID integer,
+#Create table tblInterBranSupply 
+c.execute("""CREATE TABLE tblInterBranSupply (
+        interBranSupplyID integer PRIMARY KEY,
+        interBranSupplyDate date,
+        interBranReceivingBranID integer,
+        interBranSupplyingBranID integer,
         mainSupplyStockID integer,
-        interBranchSupplyLiters real,
-        FOREIGN KEY(interBranchReceivingBranchID) REFERENCES tblBranches(branchID),
-        FOREIGN KEY(interBranchSupplyingBranchID) REFERENCES tblBranches(branchID),
+        interBranSupplyLtr real,
+        FOREIGN KEY(interBranReceivingBranID) REFERENCES tblBran(branID),
+        FOREIGN KEY(interBranSupplyingBranID) REFERENCES tblBran(branID),
         FOREIGN KEY(mainSupplyStockID) REFERENCES tblMainSupplyStock(supplyID)
     )""")
 
@@ -577,17 +585,18 @@ conn.commit()
 c.execute("""CREATE TABLE tblReturnedFuel (
         returnedFuelID integer PRIMARY KEY,
         returnedFuelDate date,
-        returnedFuelBranchID integer,
-        returnedFuelProductID integer,
+        returnedFuelBranID integer,
+        returnedFuelProdID integer,
         returnedFuelPumpID integer,
-        returnedFuelLiters real,
-        FOREIGN KEY(returnedFuelBranchID) REFERENCES tblBranches(branchID),
-        FOREIGN KEY(returnedFuelProductID) REFERENCES tblProducts(productID)        
+        returnedFuelLtr real,
+        FOREIGN KEY(returnedFuelBranID) REFERENCES tblBran(branID),
+        FOREIGN KEY(returnedFuelProdID) REFERENCES tblProd(prodID)        
     )""")
 
 #commit our command
-conn.commit()
-'''
+conn.commit()'''
+
+
 #terminate the connection
 conn.close()
 
