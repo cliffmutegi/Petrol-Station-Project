@@ -214,11 +214,11 @@ c.execute("""CREATE TABLE tblDebtPay (
         debtPayID integer PRIMARY KEY,
         debtPayDate date,
         debtPayBranID integer,
-        CredCustID integer,
+        credCustID integer,
         debtPayCurrID integer,
         debtPayAmt money,
         debtPayExRateID integer,
-        FOREIGN KEY(CredCustID) REFERENCES tblCredCust(CredCustID)
+        FOREIGN KEY(credCustID) REFERENCES tblCredCust(credCustID)
         FOREIGN KEY(debtPayBranID) REFERENCES tblBran(branID),
         FOREIGN KEY(debtPayCurrID) REFERENCES tblCurr(currID),
         FOREIGN KEY(debtPayExRateID) REFERENCES tblExRate(exRateID)
