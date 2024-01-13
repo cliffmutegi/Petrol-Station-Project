@@ -10,6 +10,46 @@ root.title('Petrol Station GUI') #this is the title of the window
 root.geometry("400x400") #specifying the size of the root window
 #root.config(font=('Times', 15))
 
+# GLOBAL FUNCTIONS
+
+# a) lastIDFtn
+global lastIDFtn 
+def lastIDFtn(tblName, IDName, databaseName, lastIDName):
+    '''This function will return the lastIndex when provided with a table name, IDName, databaseName and the lastIndexName'''
+    # Creating a database or connect to one
+    conn = sqlite3.connect(databaseName)
+
+    # Create a cursor
+    c = conn.cursor()
+            
+    c.execute("SELECT :IDName FROM \"{}\" WHERE :IDName IN (SELECT MAX(:IDName) FROM \"{}\")".format(tblName, tblName), 
+                {
+                    'IDName': IDName
+                }) # MAX(dipID) ensures we only return results from the last id entered. Used string formating for the table name as placeholders are not allowed in sqlite for table and column names
+                
+    recordslst = c.fetchone() #this will store all the records
+    print("Printing recordslst: ", recordslst) #this will print the records in the terminal
+
+                            
+    # Retrieving last index and assigning it to LastDipIDBranch1
+    try:
+        lastIDName = int(recordslst[0])
+        print("Printing lastindexName: ", lastIDName)
+    except:
+        lastIDName = 0 #this means there are no other indexes
+        print("Printing lastIDName: ", lastIDName)
+            
+        # Commit changes
+        conn.commit()
+
+        # Close connection
+        conn.close()
+
+    return lastIDName
+                
+
+
+
 # Database
 
 # Creating a connection to a database
@@ -256,6 +296,7 @@ def branchFtn():
     
     # Creating fuelReturnedFtn function
     def fuelReturnedBranch1Ftn():
+        '''This function creates a fuel returned window that is used in entering and updating fuel returned data'''
         # EDITOR_FUEL_RETURNED_BRANCH1 WINDOW
 
         # Creating a new window fuel returned
@@ -265,35 +306,13 @@ def branchFtn():
         editor_fuel_returned_branch1.geometry("400x260") #specifying the size of the root window
 
         
-        # Retrieving and saving the previous fuel returned ID
-    
-        # Creating a database or connect to one
-        conn = sqlite3.connect('petrolstation.db')
-
-        # Create a cursor
-        c = conn.cursor()
-        
-        c.execute("SELECT *, oid FROM tblReturnedFuel WHERE returnedFuelID IN (SELECT MAX(returnedFuelID) FROM tblReturnedFuel)") #oid means include the default primary key. MAX(returnedFuelID) ensures we only return results from the last id entered
-        returnedFuelRecords = c.fetchall() #this will store all the records
-        #print("Printing returnedFuelRecords: ", returnedFuelRecords) #this will print the records in the terminal
-
+        # Retrieving and saving the previous fuel returned ID    
         # Declare and initialize global variables
         global LastReturnedFuelIDBranch1
 
         LastReturnedFuelIDBranch1 = 0
         
-        # Retrieving last index and assigning it to LastReturnedFuelIDBranch1
-        for record in returnedFuelRecords:
-            id = record[0]
-            LastReturnedFuelIDBranch1 = id
-            
-        #print("Last ReturnedFuelID: ", LastReturnedFuelIDBranch1)
-        
-        # Commit changes
-        conn.commit()
-
-        # Close connection
-        conn.close()
+        lastIDFtn('tblReturnedFuel', 'returnedFuelID', 'petrolstation.db', LastReturnedFuelIDBranch1)
 
         
         # Creating fuelReturnedSubmit function
@@ -483,6 +502,7 @@ def branchFtn():
     # Creating restockSubmit function
     # For interbranch supply, I need a way to calculate the fuel used for a branch so that I can determine the mainStockSupplyID
     def restockingBranch1Ftn():
+        '''This function creates a restocking window that enables the manupulation of restocking data'''
         # EDITOR_RESTOCKING_BRANCH1 WINDOW
 
         # Creating a new window advance payments
@@ -494,65 +514,23 @@ def branchFtn():
         
         #  I) Retrieving and saving the previous interBranchSupplyID
     
-        # Creating a database or connect to one
-        conn = sqlite3.connect('petrolstation.db')
-
-        # Create a cursor
-        c = conn.cursor()
-        
-        c.execute("SELECT *, oid FROM tblInterBranSupply WHERE interBranSupplyID IN (SELECT MAX(interBranSupplyID) FROM tblInterBranSupply)") #oid means include the default primary key. MAX(interBranchSupplyID) ensures we only return results from the last id entered
-        interBranchSupplyRecords = c.fetchall() #this will store all the records
-        #print("Printing interBranchSupplyRecords: ", interBranchSupplyRecords) #this will print the records in the terminal
-
         # Declare and initialize global variables
         global LastInterBranchSupplyIDBranch1
 
         LastInterBranchSupplyIDBranch1 = 0
         
-        # Retrieving last index and assigning it to LastInterBranchSupplyIDBranch1
-        for record in interBranchSupplyRecords:
-            id = record[0]
-            LastInterBranchSupplyIDBranch1 = id
-            
-        #print("Printing LastInterBranchSupplyIDBranch1: ", LastInterBranchSupplyIDBranch1)
+        lastIDFtn('tblInterBranSupply', 'interBranSupplyID', 'petrolstation.db', 'LastInterBranchSupplyIDBranch1')
         
-        # Commit changes
-        conn.commit()
-
-        # Close connection
-        conn.close()
-
         
         #  II) Retrieving and saving the previous mainSupplyToBranchID
     
-        # Creating a database or connect to one
-        conn = sqlite3.connect('petrolstation.db')
-
-        # Create a cursor
-        c = conn.cursor()
-        
-        c.execute("SELECT *, oid FROM tblMainSupplyStockToBran WHERE supplyStockID IN (SELECT MAX(supplyStockID) FROM tblMainSupplyStockToBran)") #oid means include the default primary key. MAX(supplyStockID) ensures we only return results from the last id entered
-        supplyToBranchRecords = c.fetchall() #this will store all the records
-        #print("Printing supplyToBranchRecords: ", supplyToBranchRecords) #this will print the records in the terminal
-
         # Declare and initialize global variables
         global LastSupplyStockIDBranch1
 
         LastSupplyStockIDBranch1 = 0
         
-        # Retrieving last index and assigning it to LastSupplyStockIDBranch1
-        for record in supplyToBranchRecords:
-            id = record[0]
-            LastSupplyStockIDBranch1 = id
-            
-        #print("Printing LastSupplyStockIDBranch1: ", LastSupplyStockIDBranch1)
+        lastIDFtn('tblMainSupplyStockToBran', 'supplyStockID', 'petrolstation.db', 'LastSupplyStockIDBranch1')
         
-        # Commit changes
-        conn.commit()
-
-        # Close connection
-        conn.close()
-
 
         #  III) Determining the mainSupplyID for interbranch supplies
         # Will need to come up with a function that will compute the mainsupplyid for interbranch supplies
@@ -561,6 +539,7 @@ def branchFtn():
         #  IV) Determining the mainSupplyID for truck supplies
     
         def ComputeMainSupplyIDTruckSuppliesFtn(userDate, product, truckNo):
+            '''This function returns the mainSupplyID given the date, product and truck number'''
             #print("UserDate: ", userDate)
             #print("UserProductIDAgo: ", product)
             #print("UserTruckNoAgo: ", truckNo)
@@ -606,6 +585,7 @@ def branchFtn():
        
         # V) Creating restockSubmit function
         def restockSubmitFtn():
+            '''This function updates the database with the provided restocking data'''
             # Declaring and initializing global variables 
             global total_supply_stock_pms_branch1
             global total_supply_stock_ago_branch1
@@ -913,7 +893,7 @@ def branchFtn():
         
         
          # Creating restockSubmitFtn function
-        def restockSubmitFtn():
+        def dipsSubmitFtn():
             # Declaring and initializing global variables
             global cummulative_dips_pms_branch1
             global cummulative_dips_ago_branch1
@@ -998,35 +978,14 @@ def branchFtn():
 
             # III) # Retrieving and saving the last DipID
             
-            # Creating a database or connect to one
-            conn = sqlite3.connect('petrolstation.db')
-
-            # Create a cursor
-            c = conn.cursor()
-            
-            c.execute("SELECT *, oid FROM tblDip WHERE dipID IN (SELECT MAX(dipID) FROM tblDip)") #oid means include the default primary key. MAX(dipID) ensures we only return results from the last id entered
-            dipsRecords = c.fetchall() #this will store all the records
-            print("Printing dipsRecords: ", dipsRecords) #this will print the records in the terminal
-
             # Declare and initialize global variables
             global LastDipIDBranch1
 
             LastDipIDBranch1 = 0
             
-            # Retrieving last index and assigning it to LastDipIDBranch1
-            for record in dipsRecords:
-                id = record[0]
-                LastDipIDBranch1 = id
-                
-            print("Printing LastDipIDBranch1: ", LastDipIDBranch1)
+            lastIDFtn('tblDip', 'dipID', 'petrolstation.db', 'LastDipIDBranch1')
             
-            # Commit changes
-            conn.commit()
-
-            # Close connection
-            conn.close()
-
-            
+                        
             # IV) Updating the tblDips in the Database
 
             # Using a while statement to loop through until we fill all entries i.e. pms and ago
@@ -1039,9 +998,9 @@ def branchFtn():
             entries = 3
             while entries > 0:
                 if entries == 3:
-                    print("Entries before: ", entries)
+                    #print("Entries before: ", entries)
                     entries -= 1
-                    print("Entries after: ", entries)
+                    #print("Entries after: ", entries)
                                   
                     currentLastDipIDBranch1 += 1 #adds one to the last dipID
                                                 
@@ -1050,7 +1009,7 @@ def branchFtn():
 
                     # Create a cursor
                     c = conn.cursor()
-                    print("this is pms 1")
+                    #print("this is pms 1")
 
                     # Updating the tblDip table                    
                     c.execute("INSERT INTO tblDip VALUES (:dipID, :dipDate, :dipBranID, :dipProdID, :dipTankID, :dipQty)",
@@ -1072,9 +1031,9 @@ def branchFtn():
                     continue
                 
                 elif entries == 2:
-                    print("Entries before: ", entries)
+                    #print("Entries before: ", entries)
                     entries -= 1
-                    print("Entries after: ", entries)
+                    #print("Entries after: ", entries)
                                   
                     currentLastDipIDBranch1 += 1 #adds one to the last dipID
                                                 
@@ -1083,7 +1042,7 @@ def branchFtn():
 
                     # Create a cursor
                     c = conn.cursor()
-                    print("this is ago 1")
+                    #print("this is ago 1")
 
                     # Updating the tblDip table                    
                     c.execute("INSERT INTO tblDip VALUES (:dipID, :dipDate, :dipBranID, :dipProdID, :dipTankID, :dipQty)",
@@ -1105,9 +1064,9 @@ def branchFtn():
                     continue
 
                 else:
-                    print("Entries before: ", entries)
+                    #print("Entries before: ", entries)
                     entries -= 1
-                    print("Entries after: ", entries)
+                    #print("Entries after: ", entries)
                                   
                     currentLastDipIDBranch1 += 1 #adds one to the last dipID
                                                 
@@ -1116,7 +1075,7 @@ def branchFtn():
 
                     # Create a cursor
                     c = conn.cursor()
-                    print("this is ago 2")
+                    #print("this is ago 2")
 
                     # Updating the tblDip table                    
                     c.execute("INSERT INTO tblDip VALUES (:dipID, :dipDate, :dipBranID, :dipProdID, :dipTankID, :dipQty)",
@@ -1206,7 +1165,7 @@ def branchFtn():
         cancel_btn = Button(editor_dips_branch1, text="Cancel", command=dipsCancelFtn)
         cancel_btn.grid(row=6, column=0, columnspan=3, pady=10, padx=(10,0), ipadx=40)
 
-        submit_btn = Button(editor_dips_branch1, text="Submit", command=restockSubmitFtn)
+        submit_btn = Button(editor_dips_branch1, text="Submit", command=dipsSubmitFtn)
         submit_btn.grid(row=6, column=3, columnspan=3, pady=10, padx=(10,0), ipadx=60)
     
     
@@ -1223,6 +1182,7 @@ def branchFtn():
         
         # function to retrieve list of credit customers
         def credCustFtn():
+            '''This function retrieves the current list of debt customers'''
             # Creating a database or connect to one
             conn = sqlite3.connect('petrolstation.db')
 
@@ -1259,8 +1219,6 @@ def branchFtn():
         def credCustIDFtn():
             '''This function returns a credit customer ID given the customer name'''
             # getting customer name from cred_cust_combo
-            
-
             cred_cust_name = cred_cust_combo.get()
 
             # Querying the credit customer table to find customer ID 
@@ -1276,8 +1234,8 @@ def branchFtn():
                       }) 
             
             credCustIDRecords = c.fetchall() #this will store all the records
-            print("Printing credCustIDRecords: ", credCustIDRecords) #this will print the records in the terminal
-            print("Printing credCustIDRecords type: ", type(credCustIDRecords))
+            #print("Printing credCustIDRecords: ", credCustIDRecords) #this will print the records in the terminal
+            #print("Printing credCustIDRecords type: ", type(credCustIDRecords))
 
             global cred_custID
             
@@ -1296,12 +1254,13 @@ def branchFtn():
             # Close connection
             conn.close()
             
-            print("Printing cred_custID type: ", type(cred_custID))
+            #print("Printing cred_custID type: ", type(cred_custID))
             return cred_custID
 
-            # Function to retrieve applicable exchange rate
+        
+        # Function to retrieve applicable exchange rate
         def credExRateFtn(cred_custID, branchID):
-            # this function should check the tblExRate and provide the client rate or the branch rate
+            '''This function should check the tblExRate and provide the client rate or the branch rate'''
 
             # Creating a database or connect to one
             conn = sqlite3.connect('petrolstation.db')
@@ -1309,7 +1268,7 @@ def branchFtn():
             # Create a cursor
             c = conn.cursor()
             
-            c.execute("SELECT exRate FROM tblExRate WHERE (exRateCredCustID = :cred_custID OR exRateBranID = :branchID)",
+            c.execute("SELECT exRateID, exRate FROM tblExRate WHERE (exRateCredCustID = :cred_custID OR exRateBranID = :branchID)",
                       {
                           'cred_custID': cred_custID,
                           'branchID': branchID
@@ -1319,7 +1278,56 @@ def branchFtn():
             exRateRecords = []
 
             exRateRecords = c.fetchall() #this will store all the records
-            print("Printing exRateRecords: ", exRateRecords) #this will print the records in the terminal
+            #print("Printing exRateRecords: ", exRateRecords) #this will print the records in the terminal
+                                  
+            # Commit changes
+            conn.commit()
+
+            # Close connection
+            conn.close()
+
+            # getting exRates only
+            global exRateLst
+            exRateLst = []
+            for record in exRateRecords:
+                rate = record[1]
+                exRateLst.append(rate)
+            
+            return exRateLst
+               
+       
+        # combinded function 
+        def combinedCustIDExRate(e):
+            '''This function listens for an event and returns the applicable exchange rate for the respective credit customer'''
+            if cred_cust_combo.get() != cred_cust_name: 
+                cred_pay_exrate_combo.config(values=credExRateFtn(credCustIDFtn(),1))  
+        
+
+        # clear payment function
+        def clearPaymentFtn():
+            '''This function clears the payment amount text boxes'''
+            cred_pay_dollar_branch1.delete(0,END)
+            cred_pay_cdf_branch1.delete(0,END)
+        
+        
+        # Add payment function
+        def addPaymentFtn():
+            '''This function will get entries and add their values to the TreeView'''
+                                  
+            # Retriving the curreny symbols
+            # Creating a database or connect to one
+            conn = sqlite3.connect('petrolstation.db')
+
+            # Create a cursor
+            c = conn.cursor()
+            
+            c.execute("SELECT currSymbol FROM tblCurr")
+            
+            global currency_symbol_lst
+            currency_symbol_lst = []
+
+            currency_symbol_lst = c.fetchall() #this will store all the records
+            #print("Printing currency_symbol_lst: ", currency_symbol_lst) #this will print the records in the terminal
                                   
             # Commit changes
             conn.commit()
@@ -1327,19 +1335,189 @@ def branchFtn():
             # Close connection
             conn.close()
             
-            return exRateRecords
-        
-        
-       
-        # combinded function 
-        def combinedCustIDExRate(e):
-            if cred_cust_combo.get() != cred_cust_name: 
-                cred_pay_exrate_combo.config(values=credExRateFtn(credCustIDFtn(),1))  
-        
+            global debt_pay_items_lst_branch1
 
-        # Add payment function
-        def addPaymentFtn():
-            pass
+            # use a while statement to loop thro' 
+            entries = 2
+            while entries > 0:
+                if entries == 2:
+                    if cred_pay_dollar_branch1.get() != '':
+                        customer_ID = cred_custID
+                        customer_name = cred_cust_combo.get()
+                        debt_pay_date = date_editor_branch1.get() #currentDateBranch1
+                        currency_symbol = currency_symbol_lst[0]
+                        debt_pay_amount = cred_pay_dollar_branch1.get()
+                        exchange_rate = cred_pay_exrate_combo.get()
+                        debt_pay_item = [customer_ID,customer_name,debt_pay_date,currency_symbol,debt_pay_amount,exchange_rate]
+                        cred_pay_tree.insert('',END, values=debt_pay_item) #this inserts the debt_pay_item into the end of the treeview
+                                                
+                        cred_pay_dollar_branch1.delete(0,END) # clears the dollar entry
+                        
+                        debt_pay_items_lst_branch1.append(debt_pay_item)
+
+                        entries -= 1
+
+                    else:
+                        entries -= 1
+                else:
+                    if cred_pay_cdf_branch1.get() != '':
+                        customer_ID = cred_custID
+                        customer_name = cred_cust_combo.get()
+                        debt_pay_date = date_editor_branch1.get() #currentDateBranch1
+                        currency_symbol = currency_symbol_lst[1]
+                        debt_pay_amount = cred_pay_cdf_branch1.get()
+                        exchange_rate = cred_pay_exrate_combo.get()
+                        debt_pay_item = [customer_ID,customer_name,debt_pay_date,currency_symbol,debt_pay_amount,exchange_rate]
+                        cred_pay_tree.insert('',END, values=debt_pay_item)
+                                                
+                        cred_pay_cdf_branch1.delete(0,END) # clears the cdf entry
+                        
+                        debt_pay_items_lst_branch1.append(debt_pay_item)
+
+                        entries -= 1
+                    else:
+                        entries -= 1
+
+            print("Printing debt_pay_items_lst_branch1 after adding item: ", debt_pay_items_lst_branch1)
+
+        
+        # cancelPayment function
+        def debtPayCancelFtn():
+            '''This function clears all the fields'''
+            clearPaymentFtn()
+
+            # clearing everything from Treeview
+            cred_pay_tree.delete(*cred_pay_tree.get_children()) # * means all. get.children() will get all the children in each item 
+
+
+        # debtRemoveSelected function
+        def debtRemoveSelectedFtn():
+            ''''This function will remove all the selected records in the Treeview'''
+            # declaring and initializing a variable to keep track of selected items
+            removed_records_lst = cred_pay_tree.selection() # selection() returns a list of treeview indexes of selected items
+            #print('Printing removed records lst: ', removed_records_lst)
+
+            # Defining and initializing a list to store the treeview values of removed items
+            tree_removed_records_lst = []
+
+            # Retrieving the treeview values of removed records
+            for record in removed_records_lst:
+                tree_removed_records_lst.append(cred_pay_tree.item(record, 'values')) #tree.item(index,'values') will return the values of the tree item with the specified index
+                               
+            # updating the debt payment details list to exclude the removed items
+            try:
+                for item in tree_removed_records_lst:
+                    debt_pay_items_lst_branch1.remove(item)
+            except:
+                pass
+
+            #print("Printing Debt payment list After removal: ", debt_pay_items_lst_branch1)
+            
+            # removing selected records in treeview
+            x = cred_pay_tree.selection() 
+            for record in x:
+                #print('Printing index: ', record)
+                #print('Printing treeview values of removed items: ', cred_pay_tree.item(record))
+                cred_pay_tree.delete(record) #will remove each selected record
+            
+          
+        # debtPaySubmit function
+        def debtPaySubitFtn():
+            '''This function will update the database with the credit customer payment details'''
+
+            # a) Retrieve the last debt payment ID and saving last debt payment ID            
+            lastIDFtn('tblDebtPay', 'debtPayID', 'petrolstation.db', 'lastDebtPayID')
+
+            # Declaring and assigning currentDebtPayID
+            try:
+                currentLastDebtPayID = lastDebtPayID
+            except:
+                currentLastDebtPayID = 0 #this will apply when there are no previous records
+
+
+            # b) Updating the database with the provided debt payment data
+            # debt_pay_item = [customer_ID,customer_name,debt_pay_date,currency_symbol,debt_pay_amount,exchange_rate]
+            for item in debt_pay_items_lst_branch1:
+                currentLastDebtPayID += 1
+
+                # Retrieving the debtPayExRateID
+                #print("Printing exRateLst: ", exRateLst)
+                exchangeRateIndex = exRateLst.index(int(item[5]))
+                #print("Printing exchangeRateIndex: ", exchangeRateIndex)
+                idRecord = exRateRecords[exchangeRateIndex]
+                #print("Printing idRecord: ", idRecord)
+                id = idRecord[0]
+                #print("Printing id: ", id)
+
+                # Creating a database or connect to one
+                conn = sqlite3.connect('petrolstation.db')
+
+                # Create a cursor
+                c = conn.cursor()
+                
+                # Updating the tblDebtPay table                    
+                c.execute("INSERT INTO tblDebtPay VALUES (:debtPayID, :debtPayDate, :debtPayBranID, :credCustID, :debtPayCurrID, :debtPayAmt, :debtPayExRateID)",
+                    {
+                        'debtPayID': currentLastDebtPayID,
+                        'debtPayDate': item[2],
+                        'debtPayBranID': 1,
+                        'credCustID': item[0],
+                        'debtPayCurrID': currency_symbol_lst.index(item[3]) + 1, #index returns the index of the first occurence of the thing being searched for. we add 1 since list index starts with 0
+                        'debtPayAmt': item[4],
+                        'debtPayExRateID': id
+                    })
+
+                # Commit changes
+                conn.commit()
+
+                # Close connection
+                conn.close()
+
+
+                # c) Updating the credit customer details table with the debt payment data
+                
+                # Retrieving last credit customer detail ID
+                lastIDFtn('tblCredCustDetails', 'credCustDetailID', 'petrolstation.db', 'lastCredCustDetailID')
+
+                # Declaring and assigning currentDebtPayID
+                try:
+                    currentLastCredCustDetailID = lastCredCustDetailID
+                except:
+                    currentLastCredCustDetailID = 0 #this will apply when there are no previous records
+
+                currentLastCredCustDetailID += 1
+
+                # Creating a database or connect to one
+                conn = sqlite3.connect('petrolstation.db')
+
+                # Create a cursor
+                c = conn.cursor()
+                
+                # Updating the tblDebtPay table                    
+                c.execute("INSERT INTO tblCredCustDetails VALUES (:credCustDetailID, :credCustID, :credCustProdID, :credCustCurrID, :credCustPrice, :credCustPriceDate, :saleID, :indirectCustID, :debtPayID, :credCustCurrentBal, :credCustCurrentBalDate)",
+                          {
+                              'credCustDetailID': currentLastCredCustDetailID,
+                              'credCustID': item[0],
+                              'credCustProdID': 'NULL',
+                              'credCustCurrID': 'NULL',
+                              'credCustPrice': 'NULL',
+                              'credCustPriceDate': 'NULL',
+                              'saleID': 'NULL',
+                              'indirectCustID': 'NULL',
+                              'debtPayID': currentLastDebtPayID,
+                              'credCustCurrentBal': 'NULL',
+                              'credCustCurrentBalDate': 'NULL'
+                          })
+
+                # Commit changes
+                conn.commit()
+
+                # Close connection
+                conn.close()
+                
+
+                # d) Clear all text boxes and the treeview
+                debtPayCancelFtn()
 
 
         # MAIN FRAME
@@ -1382,22 +1560,53 @@ def branchFtn():
         cred_pay_exrate_combo.current(0) #setting default value
         cred_pay_exrate_combo.grid(row=1, column=3)
         
+        
+        # Declare and initialize variable for storing debt payment details
+        global debt_pay_items_lst_branch1
+        debt_pay_items_lst_branch1 = []
 
         # creating button
         cred_pay_addpayment_btn = Button(frame, text="Add Payment", command=addPaymentFtn)
-        cred_pay_addpayment_btn.grid(row=2, column=3)
+        cred_pay_addpayment_btn.grid(row=2, column=3, pady=5)
 
-
+        # TREEVIEW FRAME
+        treeview_frame = Frame(frame)
+        treeview_frame.grid(row=3, column=0, columnspan=4, padx=20, pady=10)
+        
+        # creating treeview scrollbar
+        tree_scroll = Scrollbar(treeview_frame)
+        tree_scroll.pack(side=RIGHT, fill=Y) #fill=Y means it scroll vertically
+        
         # creating Treeview
+        
         columns = ["credCustID", "credCustName", "debtPayDate", "currSymbol", "debtPayAmt", "debtPayExRateID"]
-        cred_pay_tree = ttk.Treeview(frame, columns=columns, show="headings")
-        cred_pay_tree.grid(row=3, column=0, columnspan=4, padx=20, pady=10)
+        cred_pay_tree = ttk.Treeview(treeview_frame, yscrollcommand=tree_scroll.set, columns=columns, show="headings")
+        cred_pay_tree.pack()
+        
+        # configure scrollbar
+        tree_scroll.config(command=cred_pay_tree.yview)
+        
         cred_pay_tree.heading('credCustID', text='CustomerID')
         cred_pay_tree.heading('credCustName', text='Customer Name')
         cred_pay_tree.heading('debtPayDate', text='Date')
         cred_pay_tree.heading('currSymbol', text='Currency Symbol')
         cred_pay_tree.heading('debtPayAmt', text='Amount')
         cred_pay_tree.heading('debtPayExRateID', text='Exchange Rate')
+
+       
+        # THIRD FRAME
+        button_frame = Frame(frame)
+        button_frame.grid(row=4, column=0, columnspan=4, pady=(10,10), sticky="news", padx=20)
+        
+        # creating buttons
+        remove_selected = Button(button_frame, text="Remove Selected", command=debtRemoveSelectedFtn)
+        remove_selected.grid(row=0, column=0, padx=10, ipadx=160)
+        
+        cancel_btn = Button(button_frame, text="Cancel", command=debtPayCancelFtn)
+        cancel_btn.grid(row=0, column=1, padx=10, ipadx=160)
+
+        submit_btn = Button(button_frame, text="Submit", command=debtPaySubitFtn)
+        submit_btn.grid(row=0, column=2, padx=10, ipadx=160)
 
 
     # Creating advancePaymentFtn function
