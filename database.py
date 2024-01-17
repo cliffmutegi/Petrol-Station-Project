@@ -148,9 +148,13 @@ c.execute("""CREATE TABLE tblAdvCust (
         advCustID integer PRIMARY KEY,
         advCustName text,
         advCustOpeningBalDate date,
-        advCustProdID interger,
+        advCustProdID integer,
         advCustOpeningLtr real,
-        FOREIGN KEY(advCustProdID) REFERENCES tblProd(prodID)
+        advCustOpeningPriceCurrID integer,
+        advCustOpeningLtrPrice money,
+        advCustOpeningExRate,
+        FOREIGN KEY(advCustProdID) REFERENCES tblProd(prodID),
+        FOREIGN KEY(advCustOpeningPriceCurrID) REFERENCES tblCurr(currID) 
     )""")
 
 #commit our command
@@ -168,8 +172,13 @@ conn.commit()
 c.execute("""CREATE TABLE tblOneOffCust (
         oneOffCustID integer PRIMARY KEY,
         oneOffCustName text,
-        oneOffCustBranID interger,
-        FOREIGN KEY(oneOffCustBranID) REFERENCES tblBran(branID)
+        oneOffCustBranID integer,
+        oneOffCustOpeningLtr real,
+        oneOffCustOpeningPriceCurrID integer,
+        oneOffCustOpeningLtrPrice money,
+        oneOffCustOpeningExRate,
+        FOREIGN KEY(oneOffCustBranID) REFERENCES tblBran(branID),
+        FOREIGN KEY(oneOffCustOpeningPriceCurrID) REFERENCES tblCurr(currID)
     )""")
 
 #commit our command

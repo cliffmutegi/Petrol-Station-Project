@@ -10,11 +10,12 @@ root.title('Petrol Station GUI') #this is the title of the window
 root.geometry("400x400") #specifying the size of the root window
 #root.config(font=('Times', 15))
 
+
 # GLOBAL FUNCTIONS
 
 # a) lastIDFtn
 global lastIDFtn 
-def lastIDFtn(tblName, IDName, databaseName, lastIDName):
+def lastIDFtn(tblName, idName, databaseName, lastIDName):
     '''This function will return the lastIndex when provided with a table name, IDName, databaseName and the lastIndexName'''
     # Creating a database or connect to one
     conn = sqlite3.connect(databaseName)
@@ -22,22 +23,22 @@ def lastIDFtn(tblName, IDName, databaseName, lastIDName):
     # Create a cursor
     c = conn.cursor()
             
-    c.execute("SELECT :IDName FROM \"{}\" WHERE :IDName IN (SELECT MAX(:IDName) FROM \"{}\")".format(tblName, tblName), 
+    c.execute("SELECT :idName FROM \"{}\" WHERE :idName IN (SELECT MAX(:idName) FROM \"{}\")".format(tblName, tblName), 
                 {
-                    'IDName': IDName
+                    'idName': idName
                 }) # MAX(dipID) ensures we only return results from the last id entered. Used string formating for the table name as placeholders are not allowed in sqlite for table and column names
                 
     recordslst = c.fetchone() #this will store all the records
-    print("Printing recordslst: ", recordslst) #this will print the records in the terminal
+    #print("Printing recordslst: ", recordslst) #this will print the records in the terminal
 
                             
-    # Retrieving last index and assigning it to LastDipIDBranch1
+    # Retrieving last index and assigning it to lastIDName
     try:
         lastIDName = int(recordslst[0])
-        print("Printing lastindexName: ", lastIDName)
+        #print("Printing lastindexName: ", lastIDName)
     except:
         lastIDName = 0 #this means there are no other indexes
-        print("Printing lastIDName: ", lastIDName)
+        #print("Printing lastIDName: ", lastIDName)
             
         # Commit changes
         conn.commit()
@@ -48,9 +49,106 @@ def lastIDFtn(tblName, IDName, databaseName, lastIDName):
     return lastIDName
                 
 
+# b) function to retrieve list of customers
+global custFtn
+def custFtn(tblName, custName, databaseName, nameLst):
+    '''This function provides the current list of customers when input the table name, customer name column, database name and nameLst'''
+    
+    # Creating a database or connect to one
+    conn = sqlite3.connect(databaseName)
+
+    # Create a cursor
+    c = conn.cursor()
+            
+    c.execute("SELECT \"{}\" FROM \"{}\"".format(custName, tblName))
+                
+    recordsLst = c.fetchall() #this will store all the records
+    #print("Printing recordsLst: ", recordsLst) #this will print the records in the terminal
+    #print("Printing type: ", type(recordsLst))
+              
+    # Retrieving customer names and assigning nameLst
+    for record in recordsLst:
+        cName = record[0]
+        nameLst.append(cName)
+                
+    #print("Printing nameLst: ", nameLst)
+                       
+    # Commit changes
+    conn.commit()
+
+    # Close connection
+    conn.close()
+            
+    return nameLst
 
 
-# Database
+# c) prodFtn
+global prodFtn
+def prodFtn(tblName, prodName, databaseName, prodLst):
+    '''This function will return the list of available products'''
+    # Creating a database or connect to one
+    conn = sqlite3.connect(databaseName)
+
+    # Create a cursor
+    c = conn.cursor()
+            
+    c.execute("SELECT \"{}\" FROM \"{}\"".format(prodName, tblName))
+                
+    recordsLst = c.fetchall() #this will store all the records
+    #print("Printing recordsLst: ", recordsLst) #this will print the records in the terminal
+    #print("Printing type: ", type(recordsLst))
+
+               
+    # Retrieving product names and assigning prodLst
+    for record in recordsLst:
+        pName = record[0]
+        prodLst.append(pName)
+                
+    #print("Printing prodLst: ", prodLst)
+                       
+    # Commit changes
+    conn.commit()
+
+    # Close connection
+    conn.close()
+            
+    return prodLst
+
+
+# d) currSymbolFtn
+global currSymbolFtn
+def currSymbolFtn(tblName, currSymbol, databaseName, currSymbolLst):
+    '''This function returns a list of currency symbols when provided the table name, currency symbol column, database, and currency symbol list name'''
+    # Creating a database or connect to one
+    conn = sqlite3.connect(databaseName)
+
+    # Create a cursor
+    c = conn.cursor()
+            
+    c.execute("SELECT \"{}\" FROM \"{}\"".format(currSymbol, tblName))
+    
+    recordsLst = c.fetchall() #this will store all the records
+    #print("Printing recordsLst: ", recordsLst) #this will print the records in the terminal
+    #print("Printing type: ", type(recordsLst))
+                
+    # Retrieving currency symbols and assigning currSymbolLst
+    for record in recordsLst:
+        cSymbol = record[0]
+        currSymbolLst.append(cSymbol)
+                
+    #print("Printing currSymbolLst: ", currSymbolLst)
+                       
+    # Commit changes
+    conn.commit()
+
+    # Close connection
+    conn.close()
+            
+    return currSymbolLst
+
+
+
+# DATABASE
 
 # Creating a connection to a database
 conn = sqlite3.connect('petrolstation.db')
@@ -1172,6 +1270,7 @@ def branchFtn():
            
     # Creating debtPaymentFtn function
     def debtPaymentFtn():
+        '''This function launches the debt payment window which is used in entering debt payment data'''
         # EDITOR_DEBT_PAYMENT_BRANCH1 WINDOW
 
         # Creating a new window Debt Payment
@@ -1180,41 +1279,7 @@ def branchFtn():
         editor_debt_payment_branch1.title('Debt Payment Place') #this is the title of the window
 
         
-        # function to retrieve list of credit customers
-        def credCustFtn():
-            '''This function retrieves the current list of debt customers'''
-            # Creating a database or connect to one
-            conn = sqlite3.connect('petrolstation.db')
-
-            # Create a cursor
-            c = conn.cursor()
-            
-            c.execute("SELECT credCustID, credCustName FROM tblCredCust") # returns all info from tblCredCust
-            credCustRecords = c.fetchall() #this will store all the records
-            #print("Printing credCustRecords: ", credCustRecords) #this will print the records in the terminal
-            #print("Printing type: ", type(credCustRecords))
-
-            # Declare and initialize variables
-            global credCustLst
-
-            credCustLst = []
-            
-            # Retrieving credit customer names and assigning credCustLst
-            for record in credCustRecords:
-                credCustName = record[1]
-                credCustLst.append(credCustName)
-                
-            #print("Printing credCustLst: ", credCustLst)
-                       
-            # Commit changes
-            conn.commit()
-
-            # Close connection
-            conn.close()
-            
-            return credCustLst
-
-
+        # FUNCTIONS
         # Function for providing credit customer ID given customer name
         def credCustIDFtn():
             '''This function returns a credit customer ID given the customer name'''
@@ -1438,9 +1503,14 @@ def branchFtn():
             # b) Updating the database with the provided debt payment data
             # debt_pay_item = [customer_ID,customer_name,debt_pay_date,currency_symbol,debt_pay_amount,exchange_rate]
             for item in debt_pay_items_lst_branch1:
+                # Declaring and initializing variales for keeping track of total amount paid
+                total_debt_dollar_payment = 0
+                total_debt_cdf_payment = 0
+                
+                # ensuring we have a unique currentLastDebtPayID for every entry
                 currentLastDebtPayID += 1
 
-                # Retrieving the debtPayExRateID
+                # I) Retrieving the debtPayExRateID
                 #print("Printing exRateLst: ", exRateLst)
                 exchangeRateIndex = exRateLst.index(int(item[5]))
                 #print("Printing exchangeRateIndex: ", exchangeRateIndex)
@@ -1449,6 +1519,8 @@ def branchFtn():
                 id = idRecord[0]
                 #print("Printing id: ", id)
 
+                
+                # II) Updating the Debt Payment table
                 # Creating a database or connect to one
                 conn = sqlite3.connect('petrolstation.db')
 
@@ -1474,7 +1546,15 @@ def branchFtn():
                 conn.close()
 
 
-                # c) Updating the credit customer details table with the debt payment data
+                # III) Keeping track of the total amount of money paid
+                # using an if/else to differenciate the currencies
+                if item[3] == '$':
+                    total_debt_dollar_payment += float(item[4])
+                else:
+                    total_debt_cdf_payment += float(item[4])
+
+                           
+                # IV) Updating the credit customer details table with the debt payment data
                 
                 # Retrieving last credit customer detail ID
                 lastIDFtn('tblCredCustDetails', 'credCustDetailID', 'petrolstation.db', 'lastCredCustDetailID')
@@ -1493,7 +1573,7 @@ def branchFtn():
                 # Create a cursor
                 c = conn.cursor()
                 
-                # Updating the tblDebtPay table                    
+                # Updating the tblCredCustDetail table                    
                 c.execute("INSERT INTO tblCredCustDetails VALUES (:credCustDetailID, :credCustID, :credCustProdID, :credCustCurrID, :credCustPrice, :credCustPriceDate, :saleID, :indirectCustID, :debtPayID, :credCustCurrentBal, :credCustCurrentBalDate)",
                           {
                               'credCustDetailID': currentLastCredCustDetailID,
@@ -1516,8 +1596,16 @@ def branchFtn():
                 conn.close()
                 
 
-                # d) Clear all text boxes and the treeview
+                # V) Clear all text boxes and the treeview
                 debtPayCancelFtn()
+
+            # c) Updating the cummulative payments label 
+
+            total_cummulative_dollar_payments_branch1 = total_debt_dollar_payment
+            total_cummulative_cdf_payments_branch1 = total_debt_cdf_payment
+
+            cummulative_dollar_payments_branch1.config(text=total_cummulative_dollar_payments_branch1)
+            cummulative_cdf_payments_branch1.config(text=total_cummulative_cdf_payments_branch1)    
 
 
         # MAIN FRAME
@@ -1534,17 +1622,15 @@ def branchFtn():
         exRate_label    = Label(frame, text="Exchange Rate")
         exRate_label.grid(row=0, column=3)
 
-        #global cred_pay_exrate_combo
-        cred_pay_exrate_combo = ttk.Combobox(frame, values=[""])
-        cred_pay_exrate_combo.grid(row=1, column=3)
-        cred_pay_exrate_combo.current(0) #setting default value
-        
-        global cred_cust_name 
-
+        #global               
+        global cred_cust_name         
         cred_cust_name = ""
 
+        global credCustLst
+        credCustLst = []
+
         # creating combobox
-        cred_cust_combo = ttk.Combobox(frame, values=credCustFtn())
+        cred_cust_combo = ttk.Combobox(frame, values=custFtn('tblCredCust', 'credCustName','petrolstation.db', credCustLst))
         cred_cust_combo.grid(row=1, column=0)
         cred_cust_combo.current(0) #this sets the first value as the default
         cred_cust_combo.bind('<<ComboboxSelected>>', combinedCustIDExRate) #binding tires this combobox to another action. <<ComboboxSelected>> is the binding and credCustIDFtn() is the action to be taken when the binding occurs
@@ -1577,8 +1663,13 @@ def branchFtn():
         tree_scroll = Scrollbar(treeview_frame)
         tree_scroll.pack(side=RIGHT, fill=Y) #fill=Y means it scroll vertically
         
+        # add some style
+        style = ttk.Style()
+
+        # pick a theme
+        style.theme_use('default')
+
         # creating Treeview
-        
         columns = ["credCustID", "credCustName", "debtPayDate", "currSymbol", "debtPayAmt", "debtPayExRateID"]
         cred_pay_tree = ttk.Treeview(treeview_frame, yscrollcommand=tree_scroll.set, columns=columns, show="headings")
         cred_pay_tree.pack()
@@ -1611,13 +1702,196 @@ def branchFtn():
 
     # Creating advancePaymentFtn function
     def advancePaymentFtn():
+        '''This function launches an advanced payment window which is used in entering advanced payment data'''
         # EDITOR_ADVANCE_PAYMENT WINDOW
 
         # Creating a new window advance payments
         global editor_advance_payment #need it to be global so that we can use editor.destroy 
         editor_advance_payment = Tk() #this is the main window its also the first line to put when working with tkinter
         editor_advance_payment.title('Enter Advance Payments Data') #this is the title of the window
-        editor_advance_payment.geometry("700x700") #specifying the size of the root window
+        #editor_advance_payment.geometry("700x700") #specifying the size of the root window
+
+        # FUNCTIONS 
+        
+        # advaPrice
+        def advaPrice(event):
+            '''This function returns a list of price options based on the customer name, product and currency with the the 
+            user being able to input a different price if its not among the provided options'''
+            
+            global prodLst
+            print('Printing prodLst: ', prodLst)
+
+            # Get values from the other combo boxes
+            customerName = adva_cust_combo.get()
+            product = adva_prod_combo.get()
+            print('Printing product: ', product)
+            currency = adva_curr_combo.get()
+            print('Printing int(prodLst.index(product)) + 1:', int(prodLst.index(product)) + 1)
+
+            # Query the advance customer table for available prices for this client
+            # Connect to database
+            conn = sqlite3.connect('petrolstation.db')
+            
+            # Create cursor
+            c = conn.cursor()
+
+            # Querying database
+            c.execute("SELECT (:advaOpPrice OR :advaPrice) FROM tblAdvCust INNER JOIN tblAdvPay ON tblAdvCust.advCustID = tblAdvPay.advCustID WHERE ((tblAdvCust.advCustName = :customerName) AND ((tblAdvCust.advCustProdID OR tblAdvPay.advPayProdID) = :prodID) AND ((tblAdvCust.advCustOpeningPriceCurrID OR tblAdvPay.advPayCurrID) = :curr))",
+                      {
+                          'advaOpPrice': 'advCustOpeningLtrPrice',
+                          'advaPrice': 'advPayProdPrice',
+                          'customerName': customerName,
+                          'prodID': int(prodLst.index(product)) + 1,
+                          'curr': currency
+                      })
+            
+            recordsLst = c.fetchall()
+            
+            # Commit changes
+            conn.commit()
+
+            # Close connection
+            conn.close()
+            
+            advaPriceLst = []
+            for record in recordsLst:
+                advaPriceLst.append(record)
+
+            adva_price_combo.config(values=advaPriceLst)
+        
+
+        # advaRemoveSelectedFtn
+        def advaRemoveSelectedFtn():
+            pass
+
+        # advaPayCancelFtn
+        def advaPayCancelFtn():
+            pass
+
+        # advaPaySubitFtn
+        def advaPaySubitFtn():
+            pass
+        
+        # MAIN FRAME
+        frame = Frame(editor_advance_payment)
+        frame.pack()
+
+        # creating labels
+        adva_cust_name_label = Label(frame, text="Customer Name")
+        adva_cust_name_label.grid(row=0, column=0)
+        prod_name_label = Label(frame, text='Product')
+        prod_name_label.grid(row=0, column=1)
+        curr_sign_label = Label(frame, text='Currency')
+        curr_sign_label.grid(row=0, column=2)
+        adva_price_label = Label(frame, text='Price')
+        adva_price_label.grid(row=0, column=3)
+        dollar_sign_label = Label(frame, text=" $ ")
+        dollar_sign_label.grid(row=0, column=4)
+        cdf_sign_label = Label(frame, text="CDF")
+        cdf_sign_label.grid(row=0, column=5)
+        exRate_label    = Label(frame, text="Exchange Rate")
+        exRate_label.grid(row=0, column=6)
+
+        # global variables
+        global adva_cust_name 
+        adva_cust_name = ""
+        
+        global advaCustLst
+        advaCustLst = []
+
+        global prodLst
+        prodLst = []
+
+        global currSymbolLst
+        currSymbolLst = []
+
+        # creating combobox
+        adva_cust_combo = ttk.Combobox(frame, values=custFtn('tblAdvCust', 'advCustName', 'petrolstation.db', advaCustLst))
+        adva_cust_combo.grid(row=1, column=0)
+        #adva_cust_combo.current(0) #this sets the first value as the default
+        adva_cust_combo.bind('<<ComboboxSelected>>', advaPrice) #binding tires this combobox to another action. <<ComboboxSelected>> is the binding and credCustIDFtn() is the action to be taken when the binding occurs
+
+        adva_prod_combo = ttk.Combobox(frame, values=prodFtn('tblProd', 'prodName', 'petrolstation.db', prodLst))
+        adva_prod_combo.grid(row=1, column=1)
+        #adva_prod_combo.current(0)
+        adva_prod_combo.bind('<<ComboboxSelected>>', advaPrice)
+
+        adva_curr_combo = ttk.Combobox(frame, values=currSymbolFtn('tblCurr', 'currSymbol', 'petrolstation.db', currSymbolLst))
+        adva_curr_combo.grid(row=1, column=2)
+        #adva_curr_combo.current(0)
+        adva_curr_combo.bind('<<ComboboxSelected>>', advaPrice)
+
+        adva_price_combo = ttk.Combobox(frame, values=[""])
+        adva_price_combo.grid(row=1, column=3) 
+        #adva_price_combo.current(0)
+
+        adva_exrate_combo = ttk.Combobox(frame, values=[""])
+        #adva_exrate_combo.current(0) #setting default value
+        adva_exrate_combo.grid(row=1, column=6)
+        
+        # creating text box
+        adva_pay_dollar_branch1 = Entry(frame, width=30)
+        adva_pay_dollar_branch1.grid(row=1, column=4)
+        adva_pay_cdf_branch1 = Entry(frame, width=30)
+        adva_pay_cdf_branch1.grid(row=1, column=5)
+
+        # # creating combobox
+        # cred_pay_exrate_combo = ttk.Combobox(frame, values=[""])
+        # cred_pay_exrate_combo.current(0) #setting default value
+        # cred_pay_exrate_combo.grid(row=1, column=3)
+        
+        
+        # # Declare and initialize variable for storing debt payment details
+        # global debt_pay_items_lst_branch1
+        # debt_pay_items_lst_branch1 = []
+
+        # # creating button
+        # cred_pay_addpayment_btn = Button(frame, text="Add Payment", command=addPaymentFtn)
+        # cred_pay_addpayment_btn.grid(row=2, column=3, pady=5)
+
+        # # TREEVIEW FRAME
+        # treeview_frame = Frame(frame)
+        # treeview_frame.grid(row=3, column=0, columnspan=4, padx=20, pady=10)
+        
+        # # creating treeview scrollbar
+        # tree_scroll = Scrollbar(treeview_frame)
+        # tree_scroll.pack(side=RIGHT, fill=Y) #fill=Y means it scroll vertically
+        
+        # # add some style
+        # style = ttk.Style()
+
+        # # pick a theme
+        # style.theme_use('default')
+        
+        # # creating Treeview
+        # columns = ["credCustID", "credCustName", "debtPayDate", "currSymbol", "debtPayAmt", "debtPayExRateID"]
+        # cred_pay_tree = ttk.Treeview(treeview_frame, yscrollcommand=tree_scroll.set, columns=columns, show="headings")
+        # cred_pay_tree.pack()
+        
+        # # configure scrollbar
+        # tree_scroll.config(command=cred_pay_tree.yview)
+        
+        # cred_pay_tree.heading('credCustID', text='CustomerID')
+        # cred_pay_tree.heading('credCustName', text='Customer Name')
+        # cred_pay_tree.heading('debtPayDate', text='Date')
+        # cred_pay_tree.heading('currSymbol', text='Currency Symbol')
+        # cred_pay_tree.heading('debtPayAmt', text='Amount')
+        # cred_pay_tree.heading('debtPayExRateID', text='Exchange Rate')
+
+       
+        # THIRD FRAME
+        button_frame = Frame(frame)
+        button_frame.grid(row=4, column=0, columnspan=7, pady=(10,10), sticky="news", padx=20)
+        
+        # creating buttons
+        remove_selected = Button(button_frame, text="Remove Selected", command=advaRemoveSelectedFtn)
+        remove_selected.grid(row=0, column=0, padx=10, ipadx=160)
+        
+        cancel_btn = Button(button_frame, text="Cancel", command=advaPayCancelFtn)
+        cancel_btn.grid(row=0, column=1, padx=10, ipadx=160)
+
+        submit_btn = Button(button_frame, text="Submit", command=advaPaySubitFtn)
+        submit_btn.grid(row=0, column=2, padx=10, ipadx=160)
 
     
     # Creating oneOffPaymentFtn function
@@ -1840,11 +2114,18 @@ def branchFtn():
     oneoff_payment_btn = Button(payments_info_frame, text="One Off Payments", command=oneOffPaymentFtn)
     oneoff_payment_btn.grid(row=0,column=2, pady=5, padx=5, ipadx=50)
 
-    # Creating labels to show the cummulative payments
+    # TOTAL PAYMENTS FRAME
     total_payments_frame = LabelFrame(payments_info_frame)
     total_payments_frame.grid(row=1, column=0, columnspan=3, padx=(40,0))
     
-    
+    # Global variables
+    global total_cummulative_dollar_payments_branch1
+    global total_cummulative_cdf_payments_branch1
+
+    total_cummulative_dollar_payments_branch1 = 0
+    total_cummulative_cdf_payments_branch1 = 0
+
+    # Creating labels to show the cummulative payments
     total_dollar_payments_label = Label(total_payments_frame, text=" $ ")
     total_dollar_payments_label.grid(row=0, column=0, pady=5)
     cummulative_dollar_payments_branch1 = Label(total_payments_frame, text="0", borderwidth=3, relief="sunken")
