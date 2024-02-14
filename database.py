@@ -152,9 +152,9 @@ c.execute("""CREATE TABLE tblAdvCust (
         advCustOpeningLtr real,
         advCustOpeningPriceCurrID integer,
         advCustOpeningLtrPrice money,
-        advCustOpeningExRate,
+        advCustOpeningExRate integer,
         FOREIGN KEY(advCustProdID) REFERENCES tblProd(prodID),
-        FOREIGN KEY(advCustOpeningPriceCurrID) REFERENCES tblCurr(currID) 
+        FOREIGN KEY(advCustOpeningPriceCurrID) REFERENCES tblCurr(currID)  
     )""")
 
 #commit our command
@@ -254,7 +254,7 @@ c.execute("""CREATE TABLE tblAdvPay (
         advPayProdID integer,
         advPayCurrID integer,
         advPayProdPrice money,
-        advPayAmt money,
+        advPayLtr real,
         advPayExRateID integer,
         FOREIGN KEY(advCustID) REFERENCES tblAdvCust(advCustID),
         FOREIGN KEY(oneOffCustID) REFERENCES tblOneOffCust(oneOffCustID),

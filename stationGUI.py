@@ -1713,20 +1713,32 @@ def branchFtn():
 
         # FUNCTIONS 
         
-        # advaPrice
-        def advaPrice(event):
-            '''This function returns a list of price options based on the customer name, product and currency with the the 
+        # a) advaPrice
+        def advaPriceFtn(event):
+            '''This function returns a list of price ptions based on the customer name, product and currency with the the 
             user being able to input a different price if its not among the provided options'''
             
             global prodLst
-            print('Printing prodLst: ', prodLst)
+            #print('Printing prodLst: ', prodLst)
 
             # Get values from the other combo boxes
             customerName = adva_cust_combo.get()
+            #print("Printing customerName: ", customerName)
             product = adva_prod_combo.get()
-            print('Printing product: ', product)
+            #print('Printing product: ', product)
+            #print('Printing int(prodLst.index(product)) + 1:', int(prodLst.index(product)) + 1)
             currency = adva_curr_combo.get()
-            print('Printing int(prodLst.index(product)) + 1:', int(prodLst.index(product)) + 1)
+            #print('Printing currency:', currency)
+            #print('Printing int(currSymbolLst.index(currency)) + 1: ', int(currSymbolLst.index(currency)) + 1)
+            try:
+                productID = int(prodLst.index(product)) + 1 
+            except ValueError:
+                productID = None
+
+            try:
+                currencyID = int(currSymbolLst.index(currency)) + 1
+            except ValueError:
+                currencyID = None
 
             # Query the advance customer table for available prices for this client
             # Connect to database
@@ -1736,16 +1748,16 @@ def branchFtn():
             c = conn.cursor()
 
             # Querying database
-            c.execute("SELECT (:advaOpPrice OR :advaPrice) FROM tblAdvCust INNER JOIN tblAdvPay ON tblAdvCust.advCustID = tblAdvPay.advCustID WHERE ((tblAdvCust.advCustName = :customerName) AND ((tblAdvCust.advCustProdID OR tblAdvPay.advPayProdID) = :prodID) AND ((tblAdvCust.advCustOpeningPriceCurrID OR tblAdvPay.advPayCurrID) = :curr))",
+            c.execute("SELECT tblAdvCust.advCustOpeningLtrPrice, tblAdvPay.advPayProdPrice FROM tblAdvCust FULL JOIN tblAdvPay ON tblAdvCust.advCustID = tblAdvPay.advCustID WHERE ((tblAdvCust.advCustName = :customerName) AND (tblAdvCust.advCustProdID = :productID OR tblAdvPay.advPayProdID = :productID) AND (tblAdvCust.advCustOpeningPriceCurrID = :currency OR tblAdvPay.advPayCurrID = :currency))", 
                       {
-                          'advaOpPrice': 'advCustOpeningLtrPrice',
-                          'advaPrice': 'advPayProdPrice',
-                          'customerName': customerName,
-                          'prodID': int(prodLst.index(product)) + 1,
-                          'curr': currency
+                          "customerName": customerName, 
+                          "productID": productID, 
+                          "currency": currencyID
                       })
-            
+
+                                  
             recordsLst = c.fetchall()
+            #print("Printing recordsLst: ", recordsLst)
             
             # Commit changes
             conn.commit()
@@ -1755,21 +1767,331 @@ def branchFtn():
             
             advaPriceLst = []
             for record in recordsLst:
-                advaPriceLst.append(record)
+                advaOp = record[0]
+                advaPr = record[1]
 
+                # use if/else to ensure we don't include duplicates
+                if advaOp != advaPr:
+                    advaPriceLst.append(advaOp)
+                    advaPriceLst.append(advaPr)
+                else:
+                    advaPriceLst.append(advaOp)
+            
+            #print('Printing advaPriceLst: ', advaPriceLst)    
             adva_price_combo.config(values=advaPriceLst)
+
+
+        # b) advaExRateFtn
+        def advaExRateFtn(event):
+            '''This function returns a list of exchange rates based on the customer name, product, currency and price with the the 
+            user being able to input a different exchange rate if its not among the provided options'''
+            # Get values from the other combo boxes
+            customerName = adva_cust_combo.get()
+            #print("Printing customerName: ", customerName)
+            product = adva_prod_combo.get()
+            #print('Printing product: ', product)
+            #print('Printing int(prodLst.index(product)) + 1:', int(prodLst.index(product)) + 1)
+            currency = adva_curr_combo.get()
+            #print('Printing currency:', currency)
+            #print('Printing int(currSymbolLst.index(currency)) + 1: ', int(currSymbolLst.index(currency)) + 1)
+            price = adva_price_combo.get()
+            #print("Printing price: ", price)
+            
+            try:
+                productID = int(prodLst.index(product)) + 1 
+            except ValueError:
+                productID = None
+
+            try:
+                currencyID = int(currSymbolLst.index(currency)) + 1
+            except ValueError:
+                currencyID = None
+
+            try:
+                customerID = int(advaCustLst.index(customerName)) + 1
+            except ValueError:
+                customerID = None
+
+            # Connect to database
+            conn = sqlite3.connect('petrolstation.db')
+            
+            # Create cursor
+            c = conn.cursor()
+
+            # Querying database
+            c.execute("SELECT tblAdvCust.advCustOpeningExRate, tblExRate.exRate FROM tblAdvCust FULL JOIN tblAdvPay ON tblAdvCust.advCustID = tblAdvPay.advCustID FULL JOIN tblExRate ON tblAdvPay.advPayExRateID = tblExRate.exRateID WHERE ((tblAdvCust.advCustName = :customerName  OR tblAdvPay.advCustID = :customerID) AND (tblAdvCust.advCustProdID = :productID OR tblAdvPay.advPayProdID = :productID) AND (tblAdvCust.advCustOpeningPriceCurrID = :currency OR tblAdvPay.advPayCurrID = :currency) AND (tblAdvCust.advCustOpeningLtrPrice = :price OR tblAdvPay.advPayProdPrice = :price))", 
+                      {
+                          "customerName": customerName,
+                          "customerID": customerID, 
+                          "productID": productID, 
+                          "currency": currencyID,
+                          "price": price
+                      })                
+           
+            recordsExRaLst = c.fetchall()
+            #print("Printing recordsLst: ", recordsExRaLst)
+            
+            # Commit changes
+            conn.commit()
+
+            # Close connection
+            conn.close()
+            
+            advaExRateLst = []
+            for record in recordsExRaLst:
+                advaRa = record[0]
+                advaPayRa = record[1]
+
+                # use if/else to ensure we don't include duplicates
+                if advaRa != advaPayRa:
+                    advaExRateLst.append(advaRa)
+                    advaExRateLst.append(advaPayRa)
+                else:
+                    advaExRateLst.append(advaRa)
+            
+            #print('Printing advaExRateLst: ', advaExRateLst)    
+            adva_exrate_combo.config(values=advaExRateLst)
         
 
-        # advaRemoveSelectedFtn
+        # c) addAdvaPaymentFtn
+        def addAdvaPaymentFtn():
+            '''This function will get entries from advance pay combo boxes and text boxes and add their 
+            values to the  advaPayTreeView'''
+                                  
+            # Retriving the curreny symbols
+            # Creating a database or connect to one
+            conn = sqlite3.connect('petrolstation.db')
+
+            # Create a cursor
+            c = conn.cursor()
+            
+            c.execute("SELECT currSymbol FROM tblCurr")
+            
+            global currency_symbol_lst
+            currency_symbol_lst = []
+
+            currency_symbol_lst = c.fetchall() #this will store all the records
+            #print("Printing currency_symbol_lst: ", currency_symbol_lst) #this will print the records in the terminal
+                                  
+            # Commit changes
+            conn.commit()
+
+            # Close connection
+            conn.close()
+            
+            
+            # declare and initialize global variables
+            global adv_pay_items_lst_branch1
+
+            adv_pay_items_lst_branch1 = []
+
+            
+            # Get values from combo boxes
+            customerName = adva_cust_combo.get()
+            
+            product = adva_prod_combo.get()
+            
+            currency = adva_curr_combo.get()
+            
+            price = adva_price_combo.get()
+
+            exrate = adva_exrate_combo.get()
+            
+            # Get values from text boxes
+            dollar_amount = adva_pay_dollar_branch1.get()
+            cdf_amount = adva_pay_cdf_branch1.get()
+
+            # preventing value errors
+            try:
+                productID = int(prodLst.index(product)) + 1 
+            except ValueError:
+                productID = None
+
+            try:
+                currencyID = int(currSymbolLst.index(currency)) + 1
+            except ValueError:
+                currencyID = None
+
+            try:
+                customerID = int(advaCustLst.index(customerName)) + 1
+            except ValueError:
+                customerID = None
+            
+            
+            # Calculating the liters
+            if currencyID == 1:
+                # converting values from string to float
+                try:
+                    dollar_amount = float(dollar_amount)
+                except:
+                    dollar_amount = 0
+
+                try:
+                    cdf_amount = float(cdf_amount)
+                except:
+                    cdf_amount = 0
+                
+                advLiters = (dollar_amount + (cdf_amount/float(exrate))) / float(price)
+
+            else:
+                # converting values from string to float
+                try:
+                    dollar_amount = float(dollar_amount)
+                except:
+                    dollar_amount = 0
+
+                try:
+                    cdf_amount = float(cdf_amount)
+                except:
+                    cdf_amount = 0                
+                
+                
+                advLiters = ((dollar_amount * float(exrate)) + cdf_amount) / float(price)
+                
+            # adding values to Treeview
+            # use a while statement to loop thro' 
+            entries = 3
+            while entries > 0:
+                if entries == 3:
+                    if (adva_pay_dollar_branch1.get() != '') and (adva_pay_cdf_branch1.get() != ''):
+                        advCustID = customerID
+                        advCustName = customerName
+                        advPayDate = date_editor_branch1.get() #currentDateBranch1
+                        advPayProdID = productID
+                        advPayLtr = advLiters
+                        advPayCurrID = currencyID
+                        advPayProdPrice = price
+                        advPayUSD = dollar_amount
+                        advPayCDF = cdf_amount
+                        advExRate = exrate
+                        adv_pay_item = [advCustID, advCustName, advPayDate, advPayProdID, advPayLtr, advPayCurrID, advPayProdPrice, advPayUSD, advPayCDF, advExRate]
+                        adva_pay_tree.insert('',END, values=adv_pay_item) #this inserts the adv_pay_item into the end of the treeview
+                                                
+                        adva_pay_dollar_branch1.delete(0,END) # clears the dollar entry
+                        adva_pay_cdf_branch1.delete(0,END) # clears the CDF entry
+                        
+                        adva_pay_items_lst_branch1.append(adv_pay_item)
+
+                        entries -= 1
+
+                    else:
+                        entries -= 1
+                elif entries == 2:
+                    if adva_pay_dollar_branch1.get() != '':
+                        advCustID = customerID
+                        advCustName = customerName
+                        advPayDate = date_editor_branch1.get() #currentDateBranch1
+                        advPayProdID = productID
+                        advPayLtr = advLiters
+                        advPayCurrID = currencyID
+                        advPayProdPrice = price
+                        advPayUSD = dollar_amount
+                        advPayCDF = 0
+                        advExRate = exrate
+                        adv_pay_item = [advCustID, advCustName, advPayDate, advPayProdID, advPayLtr, advPayCurrID, advPayProdPrice, advPayUSD, advPayCDF, advExRate]
+                        adva_pay_tree.insert('',END, values=adv_pay_item) #this inserts the adv_pay_item into the end of the treeview
+                                                
+                        adva_pay_dollar_branch1.delete(0,END) # clears the dollar entry
+                        # adva_pay_cdf_branch1.delete(0,END) # clears the CDF entry
+                        
+                        adva_pay_items_lst_branch1.append(adv_pay_item)
+
+                        entries -= 1
+                    else:
+                        entries -= 1
+                else:
+                    if adva_pay_cdf_branch1.get() != '':
+                        advCustID = customerID
+                        advCustName = customerName
+                        advPayDate = date_editor_branch1.get() #currentDateBranch1
+                        advPayProdID = productID
+                        advPayLtr = advLiters
+                        advPayCurrID = currencyID
+                        advPayProdPrice = price
+                        advPayUSD = 0
+                        advPayCDF = cdf_amount
+                        advExRate = exrate
+                        adv_pay_item = [advCustID, advCustName, advPayDate, advPayProdID, advPayLtr, advPayCurrID, advPayProdPrice, advPayUSD, advPayCDF, advExRate]
+                        adva_pay_tree.insert('',END, values=adv_pay_item) #this inserts the adv_pay_item into the end of the treeview
+                                                
+                        #adva_pay_dollar_branch1.delete(0,END) # clears the dollar entry
+                        adva_pay_cdf_branch1.delete(0,END) # clears the CDF entry
+                        
+                        adva_pay_items_lst_branch1.append(adv_pay_item)
+
+                        entries -= 1
+                    else:
+                        entries -= 1
+
+            #print("Printing debt_pay_items_lst_branch1 after adding item: ", adv_pay_items_lst_branch1)
+                        
+            # resetting combo boxes to default
+            adva_cust_combo.current(0)
+            adva_prod_combo.current(0)
+            adva_curr_combo.current(0)
+            adva_price_combo.current(0)
+        
+        
+        # d) advaRemoveSelectedFtn
         def advaRemoveSelectedFtn():
-            pass
+            ''''This function will remove all the selected records in the Treeview'''
+            # declaring and initializing a variable to keep track of selected items
+            removed_records_lst = adva_pay_tree.selection() # selection() returns a list of treeview indexes of selected items
+            #print('Printing removed records lst: ', removed_records_lst)
 
-        # advaPayCancelFtn
+            # Defining and initializing a list to store the treeview values of removed items
+            tree_removed_records_lst = []
+
+            # Retrieving the treeview values of removed records
+            for record in removed_records_lst:
+                tree_removed_records_lst.append(adva_pay_tree.item(record, 'values')) #tree.item(index,'values') will return the values of the tree item with the specified index
+                               
+            # updating the advance payment details list to exclude the removed items
+            try:
+                for item in tree_removed_records_lst:
+                    adva_pay_items_lst_branch1.remove(item)
+            except:
+                pass
+
+            #print("Printing advance payment list After removal: ", adva_pay_items_lst_branch1)
+            
+            # removing selected records in treeview
+            x = adva_pay_tree.selection() 
+            for record in x:
+                #print('Printing index: ', record)
+                #print('Printing treeview values of removed items: ', adva_pay_tree.item(record))
+                adva_pay_tree.delete(record) #will remove each selected record
+
+            # resetting combo boxes to default
+            adva_cust_combo.current(0)
+            adva_prod_combo.current(0)
+            adva_curr_combo.current(0)
+            adva_price_combo.current(0)
+
+
+        # e) advaPayCancelFtn
         def advaPayCancelFtn():
-            pass
+            '''This function clears the text boxes and the Treeview'''
+            # clearing text boxes
+            adva_pay_dollar_branch1.delete(0,END) # clears the dollar entry
+            adva_pay_cdf_branch1.delete(0,END) # clears the CDF entry
 
-        # advaPaySubitFtn
+            # resetting combo boxes to default
+            adva_cust_combo.current(0)
+            adva_prod_combo.current(0)
+            adva_curr_combo.current(0)
+            adva_price_combo.current(0)
+            #adva_exrate_combo.current(0)
+
+            # clearing treeview
+            adva_pay_tree.delete(*adva_pay_tree.get_children()) # * means all. get.children() will get all the children in each item 
+
+
+        # f) advaPaySubitFtn
         def advaPaySubitFtn():
+            # Need to check the exchange rate values if they exist in the exchange rate table and update that table if not available
+            # For instances where a customer is present in both the advPay and indirectPay tables then the liters purchased should automatically be transfered to the indirect table
+            # need to update the advpay 
             pass
         
         # MAIN FRAME
@@ -1809,21 +2131,25 @@ def branchFtn():
         adva_cust_combo = ttk.Combobox(frame, values=custFtn('tblAdvCust', 'advCustName', 'petrolstation.db', advaCustLst))
         adva_cust_combo.grid(row=1, column=0)
         #adva_cust_combo.current(0) #this sets the first value as the default
-        adva_cust_combo.bind('<<ComboboxSelected>>', advaPrice) #binding tires this combobox to another action. <<ComboboxSelected>> is the binding and credCustIDFtn() is the action to be taken when the binding occurs
+        adva_cust_combo.bind('<<ComboboxSelected>>', advaPriceFtn, ) #binding tires this combobox to another action. <<ComboboxSelected>> is the binding and credCustIDFtn() is the action to be taken when the binding occurs
+        adva_cust_combo.bind('<<ComboboxSelected>>', advaExRateFtn, add='+')
 
         adva_prod_combo = ttk.Combobox(frame, values=prodFtn('tblProd', 'prodName', 'petrolstation.db', prodLst))
         adva_prod_combo.grid(row=1, column=1)
         #adva_prod_combo.current(0)
-        adva_prod_combo.bind('<<ComboboxSelected>>', advaPrice)
+        adva_prod_combo.bind('<<ComboboxSelected>>', advaPriceFtn)
+        adva_prod_combo.bind('<<ComboboxSelected>>', advaExRateFtn, add='+')
 
         adva_curr_combo = ttk.Combobox(frame, values=currSymbolFtn('tblCurr', 'currSymbol', 'petrolstation.db', currSymbolLst))
         adva_curr_combo.grid(row=1, column=2)
         #adva_curr_combo.current(0)
-        adva_curr_combo.bind('<<ComboboxSelected>>', advaPrice)
+        adva_curr_combo.bind('<<ComboboxSelected>>', advaPriceFtn)
+        adva_curr_combo.bind('<<ComboboxSelected>>', advaExRateFtn, add='+')
 
         adva_price_combo = ttk.Combobox(frame, values=[""])
         adva_price_combo.grid(row=1, column=3) 
         #adva_price_combo.current(0)
+        adva_price_combo.bind('<<ComboboxSelected>>', advaExRateFtn)
 
         adva_exrate_combo = ttk.Combobox(frame, values=[""])
         #adva_exrate_combo.current(0) #setting default value
@@ -1833,50 +2159,62 @@ def branchFtn():
         adva_pay_dollar_branch1 = Entry(frame, width=30)
         adva_pay_dollar_branch1.grid(row=1, column=4)
         adva_pay_cdf_branch1 = Entry(frame, width=30)
-        adva_pay_cdf_branch1.grid(row=1, column=5)
-
-        # # creating combobox
-        # cred_pay_exrate_combo = ttk.Combobox(frame, values=[""])
-        # cred_pay_exrate_combo.current(0) #setting default value
-        # cred_pay_exrate_combo.grid(row=1, column=3)
+        adva_pay_cdf_branch1.grid(row=1, column=5)          
         
-        
-        # # Declare and initialize variable for storing debt payment details
-        # global debt_pay_items_lst_branch1
-        # debt_pay_items_lst_branch1 = []
+        # Declare and initialize variable for storing debt payment details
+        global adva_pay_items_lst_branch1
+        adva_pay_items_lst_branch1 = []
 
         # # creating button
-        # cred_pay_addpayment_btn = Button(frame, text="Add Payment", command=addPaymentFtn)
-        # cred_pay_addpayment_btn.grid(row=2, column=3, pady=5)
+        adva_pay_addpayment_btn = Button(frame, text="Add Payment", command=addAdvaPaymentFtn)
+        adva_pay_addpayment_btn.grid(row=2, column=6, pady=5)
 
-        # # TREEVIEW FRAME
-        # treeview_frame = Frame(frame)
-        # treeview_frame.grid(row=3, column=0, columnspan=4, padx=20, pady=10)
+        # TREEVIEW FRAME
+        treeview_frame = Frame(frame)
+        treeview_frame.grid(row=3, column=0, columnspan=7, padx=10, pady=10)
         
-        # # creating treeview scrollbar
-        # tree_scroll = Scrollbar(treeview_frame)
-        # tree_scroll.pack(side=RIGHT, fill=Y) #fill=Y means it scroll vertically
+        # creating treeview scrollbar
+        tree_scroll = Scrollbar(treeview_frame)
+        tree_scroll.pack(side=RIGHT, fill=Y) #fill=Y means it scroll vertically
         
-        # # add some style
-        # style = ttk.Style()
+        # add some style
+        style = ttk.Style()
 
-        # # pick a theme
-        # style.theme_use('default')
+        # pick a theme
+        style.theme_use('default')
         
-        # # creating Treeview
-        # columns = ["credCustID", "credCustName", "debtPayDate", "currSymbol", "debtPayAmt", "debtPayExRateID"]
-        # cred_pay_tree = ttk.Treeview(treeview_frame, yscrollcommand=tree_scroll.set, columns=columns, show="headings")
-        # cred_pay_tree.pack()
-        
-        # # configure scrollbar
-        # tree_scroll.config(command=cred_pay_tree.yview)
-        
-        # cred_pay_tree.heading('credCustID', text='CustomerID')
-        # cred_pay_tree.heading('credCustName', text='Customer Name')
-        # cred_pay_tree.heading('debtPayDate', text='Date')
-        # cred_pay_tree.heading('currSymbol', text='Currency Symbol')
-        # cred_pay_tree.heading('debtPayAmt', text='Amount')
-        # cred_pay_tree.heading('debtPayExRateID', text='Exchange Rate')
+        # creating Treeview
+        columns = ["advCustID", "advCustName", "advPayDate", "advPayProdID", "advPayLtr", "advPayCurrID", "advPayProdPrice", "advPayUSD", "advPayCDF", "advExRate"]
+        adva_pay_tree = ttk.Treeview(treeview_frame, yscrollcommand=tree_scroll.set, columns=columns, show="headings")
+        adva_pay_tree.pack()
+
+        # configure scrollbar
+        tree_scroll.config(command=adva_pay_tree.yview)
+
+        # format Treeview columns
+        adva_pay_tree.column("advCustID", anchor=E, width=90)
+        adva_pay_tree.column("advCustName", anchor=CENTER, width=170)
+        adva_pay_tree.column("advPayDate", anchor=CENTER, width=120)
+        adva_pay_tree.column("advPayProdID", anchor=E, width=120)
+        adva_pay_tree.column("advPayLtr", anchor=CENTER, width=120)
+        adva_pay_tree.column("advPayCurrID", anchor=E, width=90)
+        adva_pay_tree.column("advPayProdPrice", anchor=E, width=120)
+        adva_pay_tree.column("advPayUSD", anchor=E, width=120)
+        adva_pay_tree.column("advPayCDF", anchor=E, width=150)
+        adva_pay_tree.column("advExRate", anchor=E, width=120)
+      
+        # Create Treeview headings
+        adva_pay_tree.heading('advCustID', text='CustomerID')
+        adva_pay_tree.heading('advCustName', text='Customer Name')
+        adva_pay_tree.heading('advPayDate', text='Date')
+        adva_pay_tree.heading('advPayProdID', text='ProductID')
+        adva_pay_tree.heading('advPayLtr', text='Liters')
+        adva_pay_tree.heading('advPayCurrID', text='CurrencyID')
+        adva_pay_tree.heading('advPayProdPrice', text='Price')
+        adva_pay_tree.heading('advPayUSD', text='$')
+        adva_pay_tree.heading('advPayCDF', text='CDF')
+        adva_pay_tree.heading('advExRate', text='Exchange Rate')
+
 
        
         # THIRD FRAME

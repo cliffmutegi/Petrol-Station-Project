@@ -1,0 +1,38 @@
+tblAdvCust
+
+advCustID integer PRIMARY KEY,
+        advCustName text,
+        advCustOpeningBalDate date,
+        advCustProdID integer,
+        advCustOpeningLtr real,
+        advCustOpeningPriceCurrID integer,
+        advCustOpeningLtrPrice money,
+        advCustOpeningExRate,
+
+tblAdvPay
+advPayID integer PRIMARY KEY,
+        advPayDate date,
+        advPayBranID integer,
+        advCustID integer,
+        oneOffCustID integer,
+        advPayProdID integer,
+        advPayCurrID integer,
+        advPayProdPrice money,
+        advPayAmt money,
+        advPayExRateID integer
+
+tblExRate
+exRateID integer PRIMARY KEY,
+        exRateDate date,
+        exRateBranID integer NULL,
+        exRateCredCustID integer NULL,
+        exRateAdvCustID integer NULL,
+        exRateOneOffCustID integer NULL,
+        exRate money
+
+
+
+
+
+1	EUGIDE	2023-11-30	1	5	2	3550	2700
+2	OFFICE DES ROUTES (PLACE)	2023-11-30	3	1252.8	2	3750	2600
