@@ -1,8 +1,10 @@
 """Petrol station database GUI"""
 from tkinter import *
 from tkinter import ttk
+from tkinter import messagebox
 import sqlite3
-
+import datetime
+import re # used in regular expressios for storing and finding stringss
 # I MAIN WINDOW
 
 root = Tk() #this is the main window its also the first line to put when working with tkinter
@@ -23,12 +25,13 @@ def lastIDFtn(tblName, idName, databaseName, lastIDName):
     # Create a cursor
     c = conn.cursor()
             
-    c.execute("SELECT :idName FROM \"{}\" WHERE :idName IN (SELECT MAX(:idName) FROM \"{}\")".format(tblName, tblName), 
-                {
-                    'idName': idName
-                }) # MAX(dipID) ensures we only return results from the last id entered. Used string formating for the table name as placeholders are not allowed in sqlite for table and column names
+    c.execute("SELECT {0} FROM {1} WHERE {0} IN (SELECT MAX({0}) FROM {1})".format(idName, tblName)) # MAX(dipID) ensures we only return results from the last id entered. Used string formating for the table name as placeholders are not allowed in sqlite for table and column names
                 
-    recordslst = c.fetchone() #this will store all the records
+    try:
+        recordslst = list(c.fetchone()) #this will store all the records
+    except TypeError:
+        recordslst = [] # this will run when there are no entries in the tblName
+        
     #print("Printing recordslst: ", recordslst) #this will print the records in the terminal
 
                             
@@ -36,7 +39,7 @@ def lastIDFtn(tblName, idName, databaseName, lastIDName):
     try:
         lastIDName = int(recordslst[0])
         #print("Printing lastindexName: ", lastIDName)
-    except:
+    except IndexError:
         lastIDName = 0 #this means there are no other indexes
         #print("Printing lastIDName: ", lastIDName)
             
@@ -60,7 +63,7 @@ def custFtn(tblName, custName, databaseName, nameLst):
     # Create a cursor
     c = conn.cursor()
             
-    c.execute("SELECT \"{}\" FROM \"{}\"".format(custName, tblName))
+    c.execute("SELECT {} FROM {}".format(custName, tblName))
                 
     recordsLst = c.fetchall() #this will store all the records
     #print("Printing recordsLst: ", recordsLst) #this will print the records in the terminal
@@ -92,7 +95,7 @@ def prodFtn(tblName, prodName, databaseName, prodLst):
     # Create a cursor
     c = conn.cursor()
             
-    c.execute("SELECT \"{}\" FROM \"{}\"".format(prodName, tblName))
+    c.execute("SELECT {} FROM {}".format(prodName, tblName))
                 
     recordsLst = c.fetchall() #this will store all the records
     #print("Printing recordsLst: ", recordsLst) #this will print the records in the terminal
@@ -125,7 +128,7 @@ def currSymbolFtn(tblName, currSymbol, databaseName, currSymbolLst):
     # Create a cursor
     c = conn.cursor()
             
-    c.execute("SELECT \"{}\" FROM \"{}\"".format(currSymbol, tblName))
+    c.execute("SELECT {} FROM {}".format(currSymbol, tblName))
     
     recordsLst = c.fetchall() #this will store all the records
     #print("Printing recordsLst: ", recordsLst) #this will print the records in the terminal
@@ -146,7 +149,125 @@ def currSymbolFtn(tblName, currSymbol, databaseName, currSymbolLst):
             
     return currSymbolLst
 
+# e) exRateIDFtn
+global exRateIDFtn
+def exRateIDFtn (tblName, customerID, branchID, databaseName, exchangeRate):
+    '''This function returns the exchange rate ID list given exchange rate table, customerID, branchID,
+    database name and exchange rate'''
+    # Creating a database or connect to one
+    conn = sqlite3.connect(databaseName)
 
+    # Create a cursor
+    c = conn.cursor()
+            
+    c.execute("SELECT exRateID FROM {0} WHERE (exRateAdvCustID = {1} OR exRateBranID = {2}) AND exRate = {3} ORDER BY exRateDate DESC".format(tblName, customerID, branchID, exchangeRate))
+    
+    recordsLst = list(c.fetchall()) #this will store all the records
+    #print("Printing recordsLst: ", recordsLst) #this will print the records in the terminal
+    #print("Printing type: ", type(recordsLst))
+    exRateIDLst = []            
+    for item in recordsLst:
+        exRateID = item[0]
+        exRateIDLst.append(exRateID) 
+    #print("Printing exRateID: ", exRateID)
+    #print("Printing exRateIDLst: ", exRateIDLst)
+    # Commit changes
+    conn.commit()
+
+    # Close connection
+    conn.close()
+            
+    return exRateIDLst
+
+# f) lastOpeningLtrBalFtn
+global lastOpeningLtrBalFtn
+
+def lastOpeningLtrBalFtn(tblName, IDName, lastOpeningLtrBal, databaseName, customerID):
+    '''This function will return the lastOpeningLtrBal given the table name, IDName, lastOpeningLtrBal, databaseName, customerID'''
+    # Creating a database or connect to one
+    conn = sqlite3.connect(databaseName)
+
+    # Create a cursor
+    c = conn.cursor()
+            
+    c.execute("SELECT {0} FROM {1} WHERE {2} = {3}".format(lastOpeningLtrBal, tblName, IDName, customerID)) 
+                
+    recordslst = list(c.fetchone()) #this will store all the records
+    #print("Printing recordslst line 196 lastOpeningLtrBalFtn: ", recordslst) #this will print the records in the terminal
+
+    # Retrieving last and assigning it to lastIDName
+    lastOpeningLtrBal = 0.0
+    try:
+        lastOpeningLtrBal = float(recordslst[0])
+        #print("Printing lastOpeningLtrBal from lastOpeningLtrBalFtn line 202: ", lastOpeningLtrBal)
+    except IndexError:
+        lastOpeningLtrBal = 0.0 #this means there are no previous entries
+        #print("Printing lastOpeningLtrBal from lastOpeningLtrBalFtn line 205: ", lastOpeningLtrBal)
+            
+        # Commit changes
+        conn.commit()
+
+        # Close connection
+        conn.close()
+
+    return lastOpeningLtrBal
+
+
+# f) lastCurrentLiterBalFtn
+global lastCurrentLtrBalFtn 
+def lastCurrentLtrBalFtn(tblName, IDName, lastCurrentLtrBal, databaseName, customerID):
+    '''This function will return the lastCurrentLtrBal when provided with a table name, IDName, lastCurrentLtrBal, and databaseName
+    The customerID is provided so be used in lastOpeningLtrBalFtn incase there are no lastcurrentltrbal'''
+    # Creating a database or connect to one
+    conn = sqlite3.connect(databaseName)
+
+    # Create a cursor
+    c = conn.cursor()
+            
+    c.execute("SELECT {0} FROM {1} WHERE advCustID = {2} ORDER BY {3} DESC".format(lastCurrentLtrBal, tblName, customerID, IDName)) # Used string formating for the table name as placeholders are not allowed in sqlite for table and column names
+                
+    try:
+        recordslst = list(c.fetchone()) #this will store all the records
+    except TypeError:
+        recordslst = []
+    #print("Printing recordslst line 232: ", recordslst) #this will print the records in the terminal
+
+                            
+    # Retrieving last liter balance and assigning it to lastCurrentLtrBal
+    lastCurrentLtrBal = 0.0
+    try:
+        lastCurrentLtrBal = float(recordslst[0])
+        #print("Printing lastCurrentLtrBal line 238: ", lastCurrentLtrBal)
+    except IndexError: #this will mean there are no entries in the tblName
+        if tblName == 'tblAdvCustDetails':
+            tblName = 'tblAdvCust'
+            IDName = 'advCustID'
+            customerID = customerID
+            lastOpeningLtrBal = 'advCustOpeningLtr'
+            float_lastOpeningLtrBalFtn = float(lastOpeningLtrBalFtn(tblName, IDName, lastOpeningLtrBal, databaseName, customerID))
+            #print("Printing float_lastOpeningLtrBalFtn line 247: ", float_lastOpeningLtrBalFtn)
+            lastCurrentLtrBal = 0.0
+            lastCurrentLtrBal += float_lastOpeningLtrBalFtn
+
+        elif tblName == 'tblOneOffCustDetail':
+            tblName = 'tblAdvCust'
+            IDName = 'advCustID'
+            customerID = customerID
+            lastOpeningLtrBal = 'advCustOpeningLtr'
+            float_lastOpeningLtrBalFtn = float(lastOpeningLtrBalFtn(tblName, IDName, lastOpeningLtrBal, databaseName, customerID))
+            #print("Printing float_lastOpeningLtrBalFtn: ", type(float_lastOpeningLtrBalFtn))
+            lastCurrentLtrBal = 0.0
+            lastCurrentLtrBal += float_lastOpeningLtrBalFtn
+        
+        #print("Printing lastCurrentLtrBal line 262: ", lastCurrentLtrBal)
+            
+        # Commit changes
+        conn.commit()
+
+        # Close connection
+        conn.close()
+
+    return lastCurrentLtrBal
 
 # DATABASE
 
@@ -1081,7 +1202,7 @@ def branchFtn():
 
             LastDipIDBranch1 = 0
             
-            lastIDFtn('tblDip', 'dipID', 'petrolstation.db', 'LastDipIDBranch1')
+            lastIDFtn('tblDip', 'dipID', 'petrolstation.db', LastDipIDBranch1)
             
                         
             # IV) Updating the tblDips in the Database
@@ -1352,13 +1473,13 @@ def branchFtn():
             conn.close()
 
             # getting exRates only
-            global exRateLst
-            exRateLst = []
+            global exRateLstCredCust
+            exRateLstCredCust = []
             for record in exRateRecords:
                 rate = record[1]
-                exRateLst.append(rate)
+                exRateLstCredCust.append(rate)
             
-            return exRateLst
+            return exRateLstCredCust
                
        
         # combinded function 
@@ -1380,26 +1501,10 @@ def branchFtn():
             '''This function will get entries and add their values to the TreeView'''
                                   
             # Retriving the curreny symbols
-            # Creating a database or connect to one
-            conn = sqlite3.connect('petrolstation.db')
-
-            # Create a cursor
-            c = conn.cursor()
-            
-            c.execute("SELECT currSymbol FROM tblCurr")
-            
-            global currency_symbol_lst
-            currency_symbol_lst = []
-
-            currency_symbol_lst = c.fetchall() #this will store all the records
-            #print("Printing currency_symbol_lst: ", currency_symbol_lst) #this will print the records in the terminal
-                                  
-            # Commit changes
-            conn.commit()
-
-            # Close connection
-            conn.close()
-            
+            currSymbolLst = []
+            currSymbolLst = currSymbolFtn('tblCurr', 'currSymbol', 'petrolstation.db', currSymbolLst)
+           
+            # Retriving the debt payment list                       
             global debt_pay_items_lst_branch1
 
             # use a while statement to loop thro' 
@@ -1410,8 +1515,8 @@ def branchFtn():
                         customer_ID = cred_custID
                         customer_name = cred_cust_combo.get()
                         debt_pay_date = date_editor_branch1.get() #currentDateBranch1
-                        currency_symbol = currency_symbol_lst[0]
-                        debt_pay_amount = cred_pay_dollar_branch1.get()
+                        currency_symbol = currSymbolLst[0]
+                        debt_pay_amount = f'{float(cred_pay_dollar_branch1.get()):,.2f}'
                         exchange_rate = cred_pay_exrate_combo.get()
                         debt_pay_item = [customer_ID,customer_name,debt_pay_date,currency_symbol,debt_pay_amount,exchange_rate]
                         cred_pay_tree.insert('',END, values=debt_pay_item) #this inserts the debt_pay_item into the end of the treeview
@@ -1429,8 +1534,8 @@ def branchFtn():
                         customer_ID = cred_custID
                         customer_name = cred_cust_combo.get()
                         debt_pay_date = date_editor_branch1.get() #currentDateBranch1
-                        currency_symbol = currency_symbol_lst[1]
-                        debt_pay_amount = cred_pay_cdf_branch1.get()
+                        currency_symbol = currSymbolLst[1]
+                        debt_pay_amount = f'{float(cred_pay_cdf_branch1.get()):,.0f}'
                         exchange_rate = cred_pay_exrate_combo.get()
                         debt_pay_item = [customer_ID,customer_name,debt_pay_date,currency_symbol,debt_pay_amount,exchange_rate]
                         cred_pay_tree.insert('',END, values=debt_pay_item)
@@ -1443,7 +1548,7 @@ def branchFtn():
                     else:
                         entries -= 1
 
-            print("Printing debt_pay_items_lst_branch1 after adding item: ", debt_pay_items_lst_branch1)
+            #print("Printing debt_pay_items_lst_branch1 after adding item: ", debt_pay_items_lst_branch1)
 
         
         # cancelPayment function
@@ -1454,7 +1559,12 @@ def branchFtn():
             # clearing everything from Treeview
             cred_pay_tree.delete(*cred_pay_tree.get_children()) # * means all. get.children() will get all the children in each item 
 
-
+            # clearing debt_pay_items_lst_branch1
+            global debt_pay_items_lst_branch1
+            #print("Printing debt_pay_items_lst_branch1 before canceling: ", debt_pay_items_lst_branch1)
+            debt_pay_items_lst_branch1.clear()
+            #print("Printing debt_pay_items_lst_branch1 after canceling: ", debt_pay_items_lst_branch1)
+            
         # debtRemoveSelected function
         def debtRemoveSelectedFtn():
             ''''This function will remove all the selected records in the Treeview'''
@@ -1466,15 +1576,18 @@ def branchFtn():
             tree_removed_records_lst = []
 
             # Retrieving the treeview values of removed records
-            for record in removed_records_lst:
-                tree_removed_records_lst.append(cred_pay_tree.item(record, 'values')) #tree.item(index,'values') will return the values of the tree item with the specified index
-                               
+            tree_removed_records_lst = [list(cred_pay_tree.item(record, 'values')) for record in removed_records_lst] #tree.item(index,'values') will return the values of the tree item with the specified index
+            # list(cred_pay_tree.item(record, 'values')) ensures that the values are wrapped in a list instead of having a list of tupples
+
+            #print("Printing tree_remeoved_records_lst: ", tree_removed_records_lst)                  
             # updating the debt payment details list to exclude the removed items
-            try:
-                for item in tree_removed_records_lst:
-                    debt_pay_items_lst_branch1.remove(item)
-            except:
-                pass
+            global debt_pay_items_lst_branch1
+            #print("Printing debt_pay_items_lst_branch1 before removing: ", debt_pay_items_lst_branch1)
+            for item in tree_removed_records_lst:
+                #print("Printing item: ", item)
+                if item in debt_pay_items_lst_branch1: # check if the item is in the list
+                    debt_pay_items_lst_branch1.remove(item) # remove it from the list
+
 
             #print("Printing Debt payment list After removal: ", debt_pay_items_lst_branch1)
             
@@ -1490,8 +1603,10 @@ def branchFtn():
         def debtPaySubitFtn():
             '''This function will update the database with the credit customer payment details'''
 
-            # a) Retrieve the last debt payment ID and saving last debt payment ID            
-            lastIDFtn('tblDebtPay', 'debtPayID', 'petrolstation.db', 'lastDebtPayID')
+            # a) Retrieve the last debt payment ID and saving last debt payment ID 
+            lastDebtPayID = 0           
+            lastDebtPayID = lastIDFtn('tblDebtPay', 'debtPayID', 'petrolstation.db', lastDebtPayID)
+            print("Printing lastDebtPayID after lastIDFtn: ", lastDebtPayID)
 
             # Declaring and assigning currentDebtPayID
             try:
@@ -1499,42 +1614,49 @@ def branchFtn():
             except:
                 currentLastDebtPayID = 0 #this will apply when there are no previous records
 
-
+            #print("Printing currentLastDebtPayID: ", currentLastDebtPayID)
+                
             # b) Updating the database with the provided debt payment data
             # debt_pay_item = [customer_ID,customer_name,debt_pay_date,currency_symbol,debt_pay_amount,exchange_rate]
+            
+            # Declaring and initializing variales for keeping track of total amount paid
+            total_debt_dollar_payment = 0
+            total_debt_cdf_payment = 0
+            
             for item in debt_pay_items_lst_branch1:
-                # Declaring and initializing variales for keeping track of total amount paid
-                total_debt_dollar_payment = 0
-                total_debt_cdf_payment = 0
-                
+                           
                 # ensuring we have a unique currentLastDebtPayID for every entry
                 currentLastDebtPayID += 1
+                #print("Printing currentLastDebtPayID after + 1: ", currentLastDebtPayID)
 
                 # I) Retrieving the debtPayExRateID
-                #print("Printing exRateLst: ", exRateLst)
-                exchangeRateIndex = exRateLst.index(int(item[5]))
+                #print("Printing exRateLstCredCust: ", exRateLstCredCust)
+                exchangeRateIndex = exRateLstCredCust.index(int(item[5]))
                 #print("Printing exchangeRateIndex: ", exchangeRateIndex)
                 idRecord = exRateRecords[exchangeRateIndex]
                 #print("Printing idRecord: ", idRecord)
                 id = idRecord[0]
                 #print("Printing id: ", id)
-
                 
-                # II) Updating the Debt Payment table
+                # II) Retriving the curreny symbols
+                currSymbolLst = []
+                currSymbolLst = currSymbolFtn('tblCurr', 'currSymbol', 'petrolstation.db', currSymbolLst)
+                
+                # III) Updating the Debt Payment table
                 # Creating a database or connect to one
                 conn = sqlite3.connect('petrolstation.db')
 
                 # Create a cursor
                 c = conn.cursor()
                 
-                # Updating the tblDebtPay table                    
+                # Updating the tblDebtPay table                
                 c.execute("INSERT INTO tblDebtPay VALUES (:debtPayID, :debtPayDate, :debtPayBranID, :credCustID, :debtPayCurrID, :debtPayAmt, :debtPayExRateID)",
                     {
                         'debtPayID': currentLastDebtPayID,
                         'debtPayDate': item[2],
                         'debtPayBranID': 1,
                         'credCustID': item[0],
-                        'debtPayCurrID': currency_symbol_lst.index(item[3]) + 1, #index returns the index of the first occurence of the thing being searched for. we add 1 since list index starts with 0
+                        'debtPayCurrID': currSymbolLst.index(item[3]) + 1, #index returns the index of the first occurence of the thing being searched for. we add 1 since list index starts with 0
                         'debtPayAmt': item[4],
                         'debtPayExRateID': id
                     })
@@ -1546,18 +1668,29 @@ def branchFtn():
                 conn.close()
 
 
-                # III) Keeping track of the total amount of money paid
-                # using an if/else to differenciate the currencies
-                if item[3] == '$':
-                    total_debt_dollar_payment += float(item[4])
-                else:
-                    total_debt_cdf_payment += float(item[4])
-
+                # IV) Keeping track of the total amount of money paid
+                # using a while and an if/else to differenciate the currencies
+                print("Printing item: ", item)
+                entries = 2
+                while entries > 0:
+                    if item[3] == '$':
+                        total_debt_dollar_payment += float(item[4].replace(',',''))
+                        print("Printing total_debt_dollar_payment: ", total_debt_dollar_payment)
+                        item[3] = ''
+                        entries -= 1
+                    elif item[3] == 'CDF':
+                        total_debt_cdf_payment += int(item[4].replace(',',''))
+                        print("Printing total_debt_cdf_payment: ", total_debt_cdf_payment)
+                        item[3] = ''
+                        entries -= 1
+                    else:
+                        entries -= 1
                            
-                # IV) Updating the credit customer details table with the debt payment data
+                # V) Updating the credit customer details table with the debt payment data
                 
                 # Retrieving last credit customer detail ID
-                lastIDFtn('tblCredCustDetails', 'credCustDetailID', 'petrolstation.db', 'lastCredCustDetailID')
+                lastCredCustDetailID = 0
+                lastCredCustDetailID = lastIDFtn('tblCredCustDetails', 'credCustDetailID', 'petrolstation.db', lastCredCustDetailID)
 
                 # Declaring and assigning currentDebtPayID
                 try:
@@ -1596,16 +1729,31 @@ def branchFtn():
                 conn.close()
                 
 
-                # V) Clear all text boxes and the treeview
+                # VI) Clear all text boxes and the treeview
                 debtPayCancelFtn()
 
             # c) Updating the cummulative payments label 
+            global total_cummulative_dollar_payments_branch1
+            global total_cummulative_cdf_payments_branch1
 
-            total_cummulative_dollar_payments_branch1 = total_debt_dollar_payment
-            total_cummulative_cdf_payments_branch1 = total_debt_cdf_payment
+            if total_debt_dollar_payment != 0:
+                total_cummulative_dollar_payments_branch1 = total_cummulative_dollar_payments_branch1 + total_debt_dollar_payment
+            else:
+                total_cummulative_dollar_payments_branch1 = total_cummulative_dollar_payments_branch1
+                
+            if total_debt_cdf_payment != 0:    
+                total_cummulative_cdf_payments_branch1 = total_cummulative_cdf_payments_branch1 + total_debt_cdf_payment
+            else:
+                total_cummulative_cdf_payments_branch1 = total_cummulative_cdf_payments_branch1
 
+            print("Printing total_cummulative_dollar_payments_branch1: ", total_cummulative_dollar_payments_branch1)
+            print("Printing total_cummulative_cdf_payments_branch1: ", total_cummulative_cdf_payments_branch1)
+            
             cummulative_dollar_payments_branch1.config(text=total_cummulative_dollar_payments_branch1)
             cummulative_cdf_payments_branch1.config(text=total_cummulative_cdf_payments_branch1)    
+
+            # d) close debt pay window
+            editor_debt_payment_branch1.destroy()
 
 
         # MAIN FRAME
@@ -1699,17 +1847,30 @@ def branchFtn():
         submit_btn = Button(button_frame, text="Submit", command=debtPaySubitFtn)
         submit_btn.grid(row=0, column=2, padx=10, ipadx=160)
 
-
+       # DATA QUALITY CHECK
+        # Ensuring any user input in the cdf text box is divisible by 50; there lowest denomination
+        """ if cred_pay_cdf_branch1.get() != '':
+            print("Printing the cred_pay if statement running: ")
+            if cred_pay_cdf_branch1.get().isnumeric() == 'false':
+                print("Printing isnumeric ran: ")
+                messagebox.showwarning("This is a warning!", "Enter a number") #this method has two arguements: Title and message
+                cred_pay_cdf_branch1.delete(0,END)
+            elif cred_pay_cdf_branch1.get() % 50 != 0:
+                messagebox.showwarning("This is a warning!", "Enter a number that is divisible by 50")
+                cred_pay_cdf_branch1.delete(0,END)
+            else:
+                print("code ok") """
+    
     # Creating advancePaymentFtn function
     def advancePaymentFtn():
         '''This function launches an advanced payment window which is used in entering advanced payment data'''
-        # EDITOR_ADVANCE_PAYMENT WINDOW
+        # EDITOR_ADVANCE_PAYMENT_BRANCH1 WINDOW
 
         # Creating a new window advance payments
-        global editor_advance_payment #need it to be global so that we can use editor.destroy 
-        editor_advance_payment = Tk() #this is the main window its also the first line to put when working with tkinter
-        editor_advance_payment.title('Enter Advance Payments Data') #this is the title of the window
-        #editor_advance_payment.geometry("700x700") #specifying the size of the root window
+        global editor_advance_payment_branch1 #need it to be global so that we can use editor.destroy 
+        editor_advance_payment_branch1 = Tk() #this is the main window its also the first line to put when working with tkinter
+        editor_advance_payment_branch1.title('Enter Advance Payments Data') #this is the title of the window
+        #editor_advance_payment_branch1.geometry("700x700") #specifying the size of the root window
 
         # FUNCTIONS 
         
@@ -1720,6 +1881,10 @@ def branchFtn():
             
             global prodLst
             #print('Printing prodLst: ', prodLst)
+
+            # Retriving the curreny symbols
+            currSymbolLst = []
+            currSymbolLst = currSymbolFtn('tblCurr', 'currSymbol', 'petrolstation.db', currSymbolLst)
 
             # Get values from the other combo boxes
             customerName = adva_cust_combo.get()
@@ -1783,8 +1948,8 @@ def branchFtn():
 
         # b) advaExRateFtn
         def advaExRateFtn(event):
-            '''This function returns a list of exchange rates based on the customer name, product, currency and price with the the 
-            user being able to input a different exchange rate if its not among the provided options'''
+            '''This function returns a list of exchange rates based on the customer name, product, currency 
+            and price with the the  user being able to input a different exchange rate if its not among the provided options'''
             # Get values from the other combo boxes
             customerName = adva_cust_combo.get()
             #print("Printing customerName: ", customerName)
@@ -1796,7 +1961,10 @@ def branchFtn():
             #print('Printing int(currSymbolLst.index(currency)) + 1: ', int(currSymbolLst.index(currency)) + 1)
             price = adva_price_combo.get()
             #print("Printing price: ", price)
-            
+            # Retriving the curreny symbols
+            currSymbolLst = []
+            currSymbolLst = currSymbolFtn('tblCurr', 'currSymbol', 'petrolstation.db', currSymbolLst)
+
             try:
                 productID = int(prodLst.index(product)) + 1 
             except ValueError:
@@ -1859,33 +2027,12 @@ def branchFtn():
             values to the  advaPayTreeView'''
                                   
             # Retriving the curreny symbols
-            # Creating a database or connect to one
-            conn = sqlite3.connect('petrolstation.db')
-
-            # Create a cursor
-            c = conn.cursor()
-            
-            c.execute("SELECT currSymbol FROM tblCurr")
-            
-            global currency_symbol_lst
-            currency_symbol_lst = []
-
-            currency_symbol_lst = c.fetchall() #this will store all the records
-            #print("Printing currency_symbol_lst: ", currency_symbol_lst) #this will print the records in the terminal
-                                  
-            # Commit changes
-            conn.commit()
-
-            # Close connection
-            conn.close()
-            
-            
-            # declare and initialize global variables
-            global adv_pay_items_lst_branch1
-
-            adv_pay_items_lst_branch1 = []
-
-            
+            currSymbolLst = []
+            currSymbolLst = currSymbolFtn('tblCurr', 'currSymbol', 'petrolstation.db', currSymbolLst)
+                        
+            # retrieving advance pay list variable
+            global adva_pay_items_lst_branch1
+                        
             # Get values from combo boxes
             customerName = adva_cust_combo.get()
             
@@ -1945,8 +2092,12 @@ def branchFtn():
                 except:
                     cdf_amount = 0                
                 
-                
-                advLiters = ((dollar_amount * float(exrate)) + cdf_amount) / float(price)
+                try:
+                    price = float(price)
+                except:
+                    price = float(price.replace(',',''))
+
+                advLiters = ((dollar_amount * float(exrate)) + cdf_amount) / price
                 
             # adding values to Treeview
             # use a while statement to loop thro' 
@@ -1958,12 +2109,12 @@ def branchFtn():
                         advCustName = customerName
                         advPayDate = date_editor_branch1.get() #currentDateBranch1
                         advPayProdID = productID
-                        advPayLtr = advLiters
+                        advPayLtr = f'{advLiters:,.2f}' # the , means format in thousands and .2f means limit to 2 decimal places
                         advPayCurrID = currencyID
-                        advPayProdPrice = price
-                        advPayUSD = dollar_amount
-                        advPayCDF = cdf_amount
-                        advExRate = exrate
+                        advPayProdPrice = f'{float(price):,.2f}'
+                        advPayUSD = f'{dollar_amount:,.2f}'
+                        advPayCDF = f'{float(cdf_amount):,.0f}'
+                        advExRate = f'{float(exrate):,.0f}'
                         adv_pay_item = [advCustID, advCustName, advPayDate, advPayProdID, advPayLtr, advPayCurrID, advPayProdPrice, advPayUSD, advPayCDF, advExRate]
                         adva_pay_tree.insert('',END, values=adv_pay_item) #this inserts the adv_pay_item into the end of the treeview
                                                 
@@ -1982,12 +2133,12 @@ def branchFtn():
                         advCustName = customerName
                         advPayDate = date_editor_branch1.get() #currentDateBranch1
                         advPayProdID = productID
-                        advPayLtr = advLiters
+                        advPayLtr = f'{advLiters:,.2f}'
                         advPayCurrID = currencyID
-                        advPayProdPrice = price
-                        advPayUSD = dollar_amount
+                        advPayProdPrice = f'{float(price):,.2f}'
+                        advPayUSD = f'{dollar_amount:,.2f}'
                         advPayCDF = 0
-                        advExRate = exrate
+                        advExRate = f'{float(exrate):,.0f}'
                         adv_pay_item = [advCustID, advCustName, advPayDate, advPayProdID, advPayLtr, advPayCurrID, advPayProdPrice, advPayUSD, advPayCDF, advExRate]
                         adva_pay_tree.insert('',END, values=adv_pay_item) #this inserts the adv_pay_item into the end of the treeview
                                                 
@@ -2005,12 +2156,12 @@ def branchFtn():
                         advCustName = customerName
                         advPayDate = date_editor_branch1.get() #currentDateBranch1
                         advPayProdID = productID
-                        advPayLtr = advLiters
+                        advPayLtr = f'{advLiters:,.2f}'
                         advPayCurrID = currencyID
-                        advPayProdPrice = price
-                        advPayUSD = 0
-                        advPayCDF = cdf_amount
-                        advExRate = exrate
+                        advPayProdPrice = f'{float(price):,.2f}'
+                        advPayUSD = 0.0
+                        advPayCDF = f'{float(cdf_amount):,.0f}'
+                        advExRate = f'{float(exrate):,.0f}'
                         adv_pay_item = [advCustID, advCustName, advPayDate, advPayProdID, advPayLtr, advPayCurrID, advPayProdPrice, advPayUSD, advPayCDF, advExRate]
                         adva_pay_tree.insert('',END, values=adv_pay_item) #this inserts the adv_pay_item into the end of the treeview
                                                 
@@ -2023,13 +2174,13 @@ def branchFtn():
                     else:
                         entries -= 1
 
-            #print("Printing debt_pay_items_lst_branch1 after adding item: ", adv_pay_items_lst_branch1)
+            #print("Printing adva_pay_items_lst_branch1 after adding item: ", adva_pay_items_lst_branch1)
                         
             # resetting combo boxes to default
             adva_cust_combo.current(0)
             adva_prod_combo.current(0)
             adva_curr_combo.current(0)
-            adva_price_combo.current(0)
+            #adva_price_combo.current(0)
         
         
         # d) advaRemoveSelectedFtn
@@ -2043,17 +2194,51 @@ def branchFtn():
             tree_removed_records_lst = []
 
             # Retrieving the treeview values of removed records
-            for record in removed_records_lst:
-                tree_removed_records_lst.append(adva_pay_tree.item(record, 'values')) #tree.item(index,'values') will return the values of the tree item with the specified index
-                               
+            tree_removed_records_lst = [list(adva_pay_tree.item(record, 'values')) for record in removed_records_lst] #tree.item(index,'values') will return the values of the tree item with the specified index
+            # list(adva_pay_tree.item(record, 'values')) ensures that the values are wrapped in a list instead of having a list of tupples
+            
             # updating the advance payment details list to exclude the removed items
-            try:
-                for item in tree_removed_records_lst:
-                    adva_pay_items_lst_branch1.remove(item)
-            except:
-                pass
+            global adva_pay_items_lst_branch1
+            #print("Printing adva_pay_items_lst_branch1 before removal: ", adva_pay_items_lst_branch1)
+            for item in tree_removed_records_lst:
+                #print("Printing item: ", item)
+                # changing some values to ensure item matches adva_pay_items_lst_branch1
+                new_item = []
+                value1 = int(item[0])
+                new_item.append(value1)
+                value2 = item[1]
+                new_item.append(value2)
+                value3 = item[2]
+                new_item.append(value3)
+                value4 = int(item[3])
+                new_item.append(value4)
+                value5 = item[4]
+                new_item.append(value5)
+                value6 = int(item[5])
+                new_item.append(value6)
+                if re.search(r"\d+\.\d+", item[6]) is not None: # r"\d+\.\d+" checks for a decimal number (float) with at least one digit before and after the decimal point
+                    value7 = item[6] # is not None condition ensures that we correctly identify whether the input is a float or an integer
+                else:
+                    value7 = int(item[6])
+                new_item.append(value7)
+                if re.search(r"\d+\.\d+", item[7]) is not None and item[7] != '0.0': # r"\d+\.\d+" checks for a decimal number (float) with at least one digit before and after the decimal point
+                    value8 = item[7] # is not None condition ensures that we correctly identify whether the input is a float or an integer
+                else:
+                    value8 = float(item[7])
+                new_item.append(value8)
+                if re.search(r"\d+\,\d+", item[8]) is not None: # r"\d+\.\d+" checks for a decimal number (float) with at least one digit before and after the decimal point
+                    value9 = item[8] # is not None condition ensures that we correctly identify whether the input is a float or an integer
+                else:
+                    value9 = int(item[8])
+                new_item.append(value9)
+                value10 = item[9]
+                new_item.append(value10)
+                #print("Printing new_item: ", new_item)
+                if new_item in adva_pay_items_lst_branch1: # check if the item is in the list
+                    adva_pay_items_lst_branch1.remove(new_item) # remove it from the list
 
-            #print("Printing advance payment list After removal: ", adva_pay_items_lst_branch1)
+
+            #print("Printing Advance payment list After removal: ", adva_pay_items_lst_branch1)
             
             # removing selected records in treeview
             x = adva_pay_tree.selection() 
@@ -2062,11 +2247,13 @@ def branchFtn():
                 #print('Printing treeview values of removed items: ', adva_pay_tree.item(record))
                 adva_pay_tree.delete(record) #will remove each selected record
 
+            #print("Printing tree_removed_records_lst: ", tree_removed_records_lst)  
+
             # resetting combo boxes to default
             adva_cust_combo.current(0)
             adva_prod_combo.current(0)
             adva_curr_combo.current(0)
-            adva_price_combo.current(0)
+            #adva_price_combo.current(0)
 
 
         # e) advaPayCancelFtn
@@ -2086,16 +2273,266 @@ def branchFtn():
             # clearing treeview
             adva_pay_tree.delete(*adva_pay_tree.get_children()) # * means all. get.children() will get all the children in each item 
 
+            # clearing adva_pay_items_lst_branch1
+            global adva_pay_items_lst_branch1
+            adva_pay_items_lst_branch1.clear()
+            #print("Printing adva_pay_items_lst_branch1 after clearing: ", adva_pay_items_lst_branch1)
 
-        # f) advaPaySubitFtn
+        # f) exRateAdditionFtn
+        def exRateAdditionFtn(rateID, rateDate, branchID, customerID, rate):
+            '''This function inserts a new entry into the exchange rate table given the rateID, date, 
+            branchID, customerID and exchage rate'''
+                    
+            # Creating a database or connect to one
+            conn = sqlite3.connect('petrolstation.db')
+
+            # Create a cursor
+            c = conn.cursor()
+                
+            # Updating the tblDebtPay table 
+                           
+            c.execute("INSERT INTO tblexRate VALUES (:exRateID, :exRateDate , :exRateBranID, :exRateCredCustID, :exRateAdvCustID, :exRateOneOffCustID, :exRate)",
+                    {
+                        'exRateID': rateID,
+                        'exRateDate': rateDate,
+                        'exRateBranID': branchID,
+                        'exRateCredCustID': 'NULL',
+                        'exRateAdvCustID': customerID,
+                        'exRateOneOffCustID': 'NULL',
+                        'exRate': rate
+                    })
+            #print("Printing add exRate succesfully: ",rateID)
+            # Commit changes
+            conn.commit()
+
+            # Close connection
+            conn.close()
+        
+        # g) advaPaySubitFtn
         def advaPaySubitFtn():
             # Need to check the exchange rate values if they exist in the exchange rate table and update that table if not available
             # For instances where a customer is present in both the advPay and indirectPay tables then the liters purchased should automatically be transfered to the indirect table
             # need to update the advpay 
-            pass
+            '''This function will update the database with the advance customer payment details'''
+                       
+            # a) Retrieve the last advance payment ID and saving last advance payment ID   
+            lastAdvPayID = 0         
+            lastAdvPayID = lastIDFtn('tblAdvPay', 'advPayID', 'petrolstation.db', lastAdvPayID)
+            #print("Finished step1: ")
+            # Declaring and assigning currentAdvPayID
+            try:
+                currentLastAdvPayID = lastAdvPayID
+            except:
+                currentLastAdvPayID = 0 #this will apply when there are no previous records
+
+            #print("Finished step2")
+            # b) Updating the database with the provided debt payment data
+            # adv_pay_item = [advCustID, advCustName, advPayDate, advPayProdID, advPayLtr, advPayCurrID, advPayProdPrice, advPayUSD, advPayCDF, advExRate]
+            
+            # Declaring and initializing variales for keeping track of total amount paid
+            total_adva_dollar_payment = 0
+            total_adva_cdf_payment = 0
+
+            global adva_pay_items_lst_branch1
+            #print("Printing adva_pay_items_lst_branch1: ",adva_pay_items_lst_branch1)
+            for item in adva_pay_items_lst_branch1:
+                #print("Printing Item: ", item)      
+                # ensuring we have a unique currentLastAdvPayID for every entry
+                currentLastAdvPayID += 1
+                #print("Printing currentLastAdvPayID after + 1: ", currentLastAdvPayID)
+
+                # i) Checking the exchange rate provided to ensure that they are all in tblExRate
+                exRate = item[9].replace(',','')
+                #print("Printing exRate: ", exRate)
+                exRateAdvCustID = int(item[0])
+                branchID = 1
+                #print("finished step 3")
+                
+                # retrieve exchange rate IDs from database
+                exRateIDLst = exRateIDFtn ('tblexRate', exRateAdvCustID, branchID, 'petrolstation.db', exRate)
+                #print("Printing exRateIDLst: ", exRateIDLst)
+                #print("finished step 4")
+
+                # retrieve last exchange rate ID
+                lastExRateID = 0
+                lastExRateID = lastIDFtn('tblexRate', 'exRateID', 'petrolstation.db', lastExRateID)
+                #print("Finished step 5")
+
+                # checking whether the current exRate is in the exchange rate table and entering it if its not available
+                rateID = 0
+                if exRateIDLst != []:
+                    exchangeRateID = exRateIDLst[0] # this means the exchange rate was in the exchange rate table
+                    #print("Printing exchangeRateID: ",exchangeRateID)
+                else:
+                    rateID = int(lastExRateID) + 1
+                    rateDate = item[2]
+                    customerID = exRateAdvCustID
+                    rate = exRate
+                    # adding the exchange rate
+                    exRateAdditionFtn(rateID, rateDate, branchID, customerID, rate)
+                #print("finished step 6")
+                
+                
+                # determining the exchange rate id
+                if rateID == 0: 
+                    exchangeRateID # this means the exchange rate id was present in the exchange rate table
+                    #print("Printing the exchangeRateID: ", exchangeRateID)
+                else:
+                    exchangeRateID = rateID # this means the exchange rate id is the last exchange rate id entered into the exchange rate table
+                    #print("Printing exchangeRateID: ", exchangeRateID)
+                #print("Finished step 7")
+
+                # II) Updating the Advance Payment table
+                # Creating a database or connect to one
+                conn = sqlite3.connect('petrolstation.db')
+
+                # Create a cursor
+                c = conn.cursor()
+                
+                # Updating the tblAdvPay table
+                        
+                c.execute("INSERT INTO tblAdvPay VALUES (:advPayID, :advPayDate, :advPayBranID, :advCustID, :oneOffCustID, :advPayProdID, :advPayCurrID, :advPayProdPrice, :advPayLtr, :advPayExRateID)",
+                    {
+                        'advPayID': currentLastAdvPayID,
+                        'advPayDate': item[2],
+                        'advPayBranID': 1,
+                        'advCustID': item[0],
+                        'oneOffCustID': 'NULL', 
+                        'advPayProdID': item[3],
+                        'advPayCurrID': item[5],
+                        'advPayProdPrice': item[6],
+                        'advPayLtr': item[4],
+                        'advPayExRateID': exchangeRateID
+                    })
+                #print("Printing added advancePay: ",currentLastAdvPayID)
+                # Commit changes
+                conn.commit()
+
+                # Close connection
+                conn.close()
+
+                #print("Finished step 8")
+
+                # III) Keeping track of the total amount of money paid
+                # using a while and an if/else to differenciate the currencies
+                #print("Printing item: ", item)
+                entries = 2
+                while entries > 0:
+                    if item[7] != 0.0:
+                        total_adva_dollar_payment += float(item[7].replace(',',''))
+                        #print("Printing total_adva_dollar_payment: ", total_adva_dollar_payment)
+                        item[7] = 0.0
+                        entries -= 1
+                    elif item[8] != 0:
+                        total_adva_cdf_payment += int(item[8].replace(',',''))
+                        #print("Printing total_adva_cdf_payment: ", total_adva_cdf_payment)
+                        item[8] = 0
+                        entries -= 1
+                    else:
+                        entries -= 1
+                #print("Finished step 9")  
+
+                # IV) Updating the advance customer details table with the advance payment data
+                
+                # Retrieving last advance customer detail ID
+                lastAdvaCustDetailID = 0
+                lastAdvaCustDetailID = lastIDFtn('tblAdvCustDetails', 'advCustDetailID', 'petrolstation.db', lastAdvaCustDetailID)
+                #print("Finished step 10")
+
+                # Declaring and assigning currentLastAdvaCustDetailID
+                try:
+                    currentLastAdvaCustDetailID = lastAdvaCustDetailID
+                except:
+                    currentLastAdvaCustDetailID = 0 #this will apply when there are no previous records
+
+                currentLastAdvaCustDetailID += 1
+                #print("Finished step 11")
+                                
+                # Determining the Current Liter Balance
+                currentLtrBal = 0.0 #ensuring every time this function runs the currentLtrBal is 0.0 liters
+                float_lastCurrentLtrBalFtn = 0.0
+                try:
+                    cleaned_item = float(item[4].replace(',',''))
+                except:
+                    cleaned_item = item[4]
+
+                #print("Printing cleaned_item: ",cleaned_item)
+                #print("Pringint item[0] line 2455: ", item[0])
+                #print("Printing float_lastCurrentLtrBalFtn Before function line 2457: ", float_lastCurrentLtrBalFtn)
+                float_lastCurrentLtrBalFtn = float(lastCurrentLtrBalFtn('tblAdvCustDetails', 'advCustDetailID', 'advCustCurrentLiterBal', 'petrolstation.db', item[0]))
+                #print("Printing float_lastCurrentLtrBalFtn After line 2458: ", float_lastCurrentLtrBalFtn)
+                #print("Printing currentLtrBal Before addition line 2445: ", currentLtrBal)
+                currentLtrBal =  float_lastCurrentLtrBalFtn + cleaned_item
+                #print("Printing currentLtrBal After addition line 2447: ", currentLtrBal)
+                currentLtrBalDatetime = datetime.datetime.now()
+                #print("Finished step 12")
+                
+                # Creating a database or connect to one
+                conn = sqlite3.connect('petrolstation.db')
+
+                # Create a cursor
+                c = conn.cursor()
+                
+                # Updating the tblAdvCustDetails table          
+                                    
+                c.execute("INSERT INTO tblAdvCustDetails VALUES (:advCustDetailID, :advCustID, :advCustProdID, :advCustCurrID, :advCustPrice, :advCustPriceDate, :advPayID, :indirectCustID, :saleID, :advCustCurrentLiterBal, :advCustCurrentLiterBalDate)",
+                          {
+                              'advCustDetailID': currentLastAdvaCustDetailID,
+                              'advCustID': item[0],
+                              'advCustProdID': 'NULL',
+                              'advCustCurrID': 'NULL',
+                              'advCustPrice': 'NULL',
+                              'advCustPriceDate': 'NULL',
+                              'advPayID': currentLastAdvPayID,
+                              'indirectCustID': 'NULL',
+                              'saleID': 'NULL',
+                              'advCustCurrentLiterBal': currentLtrBal,
+                              'advCustCurrentLiterBalDate': currentLtrBalDatetime
+                          })
+                #print("Printing added new data in advcustDetails: ", currentLastAdvaCustDetailID)
+                
+                # Commit changes
+                conn.commit()
+
+                # Close connection
+                conn.close()
+                #print("Finished one item _____________________________________")
+            #print("Finished step 13")
+
+            # c) Clear all text boxes and the treeview
+            advaPayCancelFtn()
+
+            # clear adva_pay_items_lst_branch1
+            adva_pay_items_lst_branch1.clear()
+            #print("Finished step 14")
+
+            # d) Updating the cummulative payments label 
+            global total_cummulative_dollar_payments_branch1
+            global total_cummulative_cdf_payments_branch1
+
+            if total_adva_dollar_payment != 0:
+                total_cummulative_dollar_payments_branch1 += total_adva_dollar_payment
+            else:
+                total_cummulative_dollar_payments_branch1
+                
+            if total_adva_cdf_payment != 0:    
+                total_cummulative_cdf_payments_branch1 += total_adva_cdf_payment
+            else:
+                total_cummulative_cdf_payments_branch1
+
+            #print("Printing total_cummulative_dollar_payments_branch1: ", total_cummulative_dollar_payments_branch1)
+            #print("Printing total_cummulative_cdf_payments_branch1: ", total_cummulative_cdf_payments_branch1)
+            #print("Finished step 15")
+            cummulative_dollar_payments_branch1.config(text=total_cummulative_dollar_payments_branch1)
+            cummulative_cdf_payments_branch1.config(text=total_cummulative_cdf_payments_branch1)    
+            #print("Finished step 16")
+
+            # e) close debt pay window
+            editor_advance_payment_branch1.destroy() 
+            #print("Finished step 17")
         
         # MAIN FRAME
-        frame = Frame(editor_advance_payment)
+        frame = Frame(editor_advance_payment_branch1)
         frame.pack()
 
         # creating labels
@@ -2124,8 +2561,9 @@ def branchFtn():
         global prodLst
         prodLst = []
 
-        global currSymbolLst
+        # Retriving the curreny symbols
         currSymbolLst = []
+        currSymbolLst = currSymbolFtn('tblCurr', 'currSymbol', 'petrolstation.db', currSymbolLst)
 
         # creating combobox
         adva_cust_combo = ttk.Combobox(frame, values=custFtn('tblAdvCust', 'advCustName', 'petrolstation.db', advaCustLst))
@@ -2140,7 +2578,7 @@ def branchFtn():
         adva_prod_combo.bind('<<ComboboxSelected>>', advaPriceFtn)
         adva_prod_combo.bind('<<ComboboxSelected>>', advaExRateFtn, add='+')
 
-        adva_curr_combo = ttk.Combobox(frame, values=currSymbolFtn('tblCurr', 'currSymbol', 'petrolstation.db', currSymbolLst))
+        adva_curr_combo = ttk.Combobox(frame, values= currSymbolLst)
         adva_curr_combo.grid(row=1, column=2)
         #adva_curr_combo.current(0)
         adva_curr_combo.bind('<<ComboboxSelected>>', advaPriceFtn)
