@@ -80,7 +80,7 @@ c.execute("""CREATE TABLE tblProdDetails (
         branID integer,
         prodWholesalePrice money,
         prodPumpPrice money,
-        ProdpecialPrice money,
+        prodspecialPrice money,
         prodPriceDate date,
         FOREIGN KEY(prodID) REFERENCES tblProd(prodID),
         FOREIGN KEY(prodCurrID) REFERENCES tblCurr(currID),
@@ -173,11 +173,13 @@ c.execute("""CREATE TABLE tblOneOffCust (
         oneOffCustID integer PRIMARY KEY,
         oneOffCustName text,
         oneOffCustBranID integer,
+        oneOffCustProdID integer,
         oneOffCustOpeningLtr real,
         oneOffCustOpeningPriceCurrID integer,
         oneOffCustOpeningLtrPrice money,
-        oneOffCustOpeningExRate,
+        oneOffCustOpeningExRate money,
         FOREIGN KEY(oneOffCustBranID) REFERENCES tblBran(branID),
+        FOREIGN KEY(oneOffCustProdID) REFERENCES tblProd(prodID),
         FOREIGN KEY(oneOffCustOpeningPriceCurrID) REFERENCES tblCurr(currID)
     )""")
 
@@ -192,7 +194,7 @@ c.execute("""DROP TABLE IF EXISTS tblExRate""")
 #commit our command
 conn.commit()
 
-#Create table tblexRate 
+#Create table tblExRate 
 c.execute("""CREATE TABLE tblExRate (
         exRateID integer PRIMARY KEY,
         exRateDate date,
@@ -379,9 +381,8 @@ c.execute("""CREATE TABLE tblOneOffCustDetail (
         oneOffCustDetailID integer PRIMARY KEY,
         oneOffCustID integer,
         advPayID integer,
-        oneOffCustCurrentLiterBal integer,
+        oneOffCustCurrentLiterBal float,
         oneOffCustCurrentLiterBalDate datetime,
-        oneOffCustProdPrice money,
         saleID integer,
         FOREIGN KEY(oneOffCustID) REFERENCES tblOneOffCust(oneOffCustID),
         FOREIGN KEY(advPayID) REFERENCES tblAdvPay(advPayID),
@@ -501,12 +502,12 @@ c.execute("""CREATE TABLE tblDailyCollection (
         dailyCollectionFCCurrID integer,
         dailyCollectionFCAmt money,
         exRateID integer,
-        advPayID,
-        debtPayID,
+        advPayID integer,
+        debtPayID integer,
         FOREIGN KEY(dailyCollectionBranID) REFERENCES tblBran(branID),
         FOREIGN KEY(dailyCollectionUSDCurrID) REFERENCES tblCurr(currID),
         FOREIGN KEY(dailyCollectionFCCurrID) REFERENCES tblCurr(currID),        
-        FOREIGN KEY(exRateID) REFERENCES tblexRate(exRateID),
+        FOREIGN KEY(exRateID) REFERENCES tblExRate(exRateID),
         FOREIGN KEY(advPayID) REFERENCES tblAdvPay(advPayID),
         FOREIGN KEY(debtPayID) REFERENCES tblDebtPay(debtPayID)
     )""")

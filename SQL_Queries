@@ -1,0 +1,41 @@
+ALTER TABLE tblAdvCust
+DROP advCustOpeningExRateID;
+ADD FOREIGN KEY(advCustOpeningExRateID) REFERENCES tblCurr(currID;
+
+SELECT tblAdvCust.advCustOpeningLtrPrice, tblAdvPay.advPayProdPrice
+FROM tblAdvCust
+FULL JOIN tblAdvPay ON tblAdvCust.advCustID = tblAdvPay.advCustID
+WHERE tblAdvCust.advCustID = 2 AND (tblAdvCust.advCustProdID = 3 OR tblAdvPay.advPayProdID = 3) AND (tblAdvCust.advCustOpeningPriceCurrID = 2 OR tblAdvPay.advPayCurrID = 2);
+
+SELECT *--tblAdvCust.advCustOpeningExRate, tblExRate.exRate 
+FROM tblAdvCust FULL JOIN tblAdvPay ON tblAdvCust.advCustID = tblAdvPay.advCustID
+FULL JOIN tblExRate ON tblAdvPay.advPayExRateID = tblExRate.exRateID 
+WHERE ((tblAdvCust.advCustName = 'EUGIDE' OR tblAdvPay.advCustID = 1) AND (tblAdvCust.advCustProdID = 1 OR tblAdvPay.advPayProdID = 1) AND (tblAdvCust.advCustOpeningPriceCurrID = 2 OR tblAdvPay.advPayCurrID = 2) AND (tblAdvCust.advCustOpeningLtrPrice = NULL OR tblAdvPay.advPayAmt = 3600));
+
+SELECT tblExRate.exRate 
+FROM tblAdvPay FULL JOIN tblExRate ON tblAdvPay.advPayExRateID = tblExRate.exRateID
+WHERE ((tblAdvCust.advCustName = 'EUGIDE' OR tblAdvPay.advCustID = 1) AND (tblAdvCust.advCustProdID = 1 OR tblAdvPay.advPayProdID = 1) AND (tblAdvCust.advCustOpeningPriceCurrID = 2 OR tblAdvPay.advPayCurrID = 2) AND (tblAdvCust.advCustOpeningLtrPrice = NULL OR tblAdvPay.advPayProdPrice = 3600));
+
+SELECT *--tblExRate.exRate 
+FROM tblAdvPay FULL JOIN tblExRate ON tblAdvPay.advPayExRateID = tblExRate.exRateID
+WHERE ((tblAdvPay.advCustID = 1) AND (tblAdvPay.advPayProdID = 1) AND (tblAdvPay.advPayCurrID = 2) AND (tblAdvPay.advPayProdPrice = 3600));
+
+SELECT debtPayID 
+FROM tblDebtPay
+WHERE debtPayID IN (SELECT MAX(debtPayID) FROM tblDebtPay);
+
+SELECT tblOneOffCust.oneOffCustOpeningLtrPrice, tblAdvPay.advPayProdPrice, tblProdDetails.prodPumpPrice, tblProdDetails.prodWholesalePrice, tblProdDetails.prodspecialPrice 
+FROM tblOneOffCust 
+LEFT JOIN tblAdvPay ON tblOneOffCust.oneOffCustID = tblAdvPay.oneOffCustID 
+LEFT JOIN tblProdDetails ON tblOneOffCust.oneOffCustProdID = tblProdDetails.prodID AND tblOneOffCust.oneOffCustOpeningPriceCurrID = tblProdDetails.prodCurrID AND tblOneOffCust.oneOffCustBranID = tblProdDetails.branID 
+WHERE ((tblOneOffCust.oneOffCustName = 'MAURICE') 
+AND (tblOneOffCust.oneOffCustProdID = 1 OR tblAdvPay.advPayProdID = 1) 
+AND (tblOneOffCust.oneOffCustOpeningPriceCurrID = 1 OR tblAdvPay.advPayCurrID = 1) 
+OR (tblProdDetails.branID = 1 AND tblProdDetails.prodID = 1 AND tblProdDetails.prodCurrID = 1));
+
+SELECT tblOneOffCust.oneOffCustOpeningLtrPrice, tblAdvPay.advPayProdPrice  
+FROM tblOneOffCust 
+LEFT JOIN tblAdvPay ON tblOneOffCust.oneOffCustID = tblAdvPay.oneOffCustID 
+WHERE ((tblOneOffCust.oneOffCustName = 'MAURICE') 
+AND (tblOneOffCust.oneOffCustProdID = 1 OR tblAdvPay.advPayProdID = 1) 
+AND (tblOneOffCust.oneOffCustOpeningPriceCurrID = 1 OR tblAdvPay.advPayCurrID = 1));
