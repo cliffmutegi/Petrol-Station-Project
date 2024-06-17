@@ -312,6 +312,96 @@ def lastCurrentLtrBalFtn(tblName, IDName, lastCurrentLtrBal, databaseName, custo
 
     return lastCurrentLtrBal
 
+
+# i) lastOpeningCredBalFtn
+global lastOpeningCredBalFtn
+
+def lastOpeningCredBalFtn(tblName, IDName, lastOpeningCredBal, databaseName, customerID):
+    '''This function will return the lastOpeningCredBal given the table name, IDName, lastOpeningCredBal, databaseName, customerID'''
+    # Creating a database or connect to one
+    conn = sqlite3.connect(databaseName)
+
+    # Create a cursor
+    c = conn.cursor()
+
+    # Construct the query string with table and column names
+    query = f"SELECT {lastOpeningCredBal} FROM {tblName} WHERE {IDName} = ?"
+
+    c.execute(query, (customerID,)) # we use (customerID,) because the execute() method expects a sequence (such as a tuple or list) for the parameters
+
+    try:
+        recordslst = list(c.fetchone()) #this will store all the records
+        print("Printing recordslst line 334 lastOpeningCredBalFtn: ", recordslst) #this will print the records in the terminal
+    except TypeError:
+        recordslst = [] #this means there were no records returned
+
+    # Retrieving last and assigning it to lastOpeningCredBal
+    lastOpeningCredBal = 0.0
+    try:
+        lastOpeningCredBal = float(recordslst[0])
+        print("Printing lastOpeningCredBal from lastOpeningCredBalFtn line 342: ", lastOpeningCredBal)
+    except IndexError:
+        lastOpeningCredBal = 0.0 #this means there are no previous entries
+        print("Printing lastOpeningCredBal from lastOpeningCredBalFtn line 345: ", lastOpeningCredBal)
+            
+        # Commit changes
+        conn.commit()
+
+        # Close connection
+        conn.close()
+
+    return lastOpeningCredBal
+
+
+# j) lastCurrentCredBalFtn
+global lastCurrentCredBalFtn 
+def lastCurrentCredBalFtn(tblName, IDName, lastCurrentCredBal, databaseName, customerIDName, customerID):
+    '''This function will return the lastCurrentCredBal when provided with a table name, IDName, lastCurrentCredBal, and databaseName
+    The customerID is provided so be used in lastOpeningCredBalFtn incase there are no lastcurrentCredBal'''
+    # Creating a database or connect to one
+    conn = sqlite3.connect(databaseName)
+
+    # Create a cursor
+    c = conn.cursor()
+
+    # Construct the query string with table and column names
+    query = f"SELECT {lastCurrentCredBal} FROM {tblName} WHERE {customerIDName} = ? ORDER BY {IDName} DESC"
+
+    c.execute(query, (customerID,)) # we use (customerID,) because the execute() method expects a sequence (such as a tuple or list) for the parameters
+              
+    try:
+        recordslst = list(c.fetchone()) #this will store all the records
+    except TypeError:
+        recordslst = []
+    print("Printing recordslst line 376: ", recordslst) #this will print the records in the terminal
+
+                            
+    # Retrieving last credit balance and assigning it to lastCurrentCredBal
+    lastCurrentCredBal = 0.0
+    try:
+        lastCurrentCredBal = float(recordslst[0])
+        print("Printing lastCurrentCredBal line 383: ", lastCurrentCredBal)
+    except TypeError: #this will mean there are no entries in the tblName
+        if tblName == 'tblCredCustDetails':
+            tblName = 'tblCredCust'
+            IDName = 'credCustID'
+            customerID = customerID
+            lastOpeningCredBal = 'credCustOpeningBal'
+            float_lastOpeningCredBalFtn = float(lastOpeningCredBalFtn(tblName, IDName, lastOpeningCredBal, databaseName, customerID))
+            print("Printing float_lastOpeningCredBalFtn line 391: ", float_lastOpeningCredBalFtn)
+            lastCurrentCredBal = 0.0
+            lastCurrentCredBal += float_lastOpeningCredBalFtn
+            
+        print("Printing lastCurrentCredBal line 395: ", lastCurrentCredBal)
+            
+        # Commit changes
+        conn.commit()
+
+        # Close connection
+        conn.close()
+
+    return lastCurrentCredBal
+
 # DATABASE
 
 # Creating a connection to a database
@@ -1445,465 +1535,7 @@ def branchFtn():
            
     # Creating debtPaymentFtn function
     def debtPaymentFtn():
-        '''This function launches the debt payment window which is used in entering debt payment data'''
-        # EDITOR_DEBT_PAYMENT_BRANCH1 WINDOW
-
-        # Creating a new window Debt Payment
-        global editor_debt_payment_branch1 #need it to be global so that we can use editor.destroy 
-        editor_debt_payment_branch1 = Tk() #this is the main window its also the first line to put when working with tkinter
-        editor_debt_payment_branch1.title('Debt Payment Place') #this is the title of the window
-
         
-        # FUNCTIONS
-        # Function for providing credit customer ID given customer name
-        def credCustIDFtn():
-            '''This function returns a credit customer ID given the customer name'''
-            # getting customer name from cred_cust_combo
-            cred_cust_name = cred_cust_combo.get()
-
-            # Querying the credit customer table to find customer ID 
-            # Creating a database or connect to one
-            conn = sqlite3.connect('petrolstation.db')
-
-            # Create a cursor
-            c = conn.cursor()
-            
-            c.execute("SELECT credCustID FROM tblCredCust WHERE credCustName = :cred_cust_name", 
-                      {
-                          'cred_cust_name': cred_cust_name
-                      }) 
-            
-            credCustIDRecords = c.fetchall() #this will store all the records
-            #print("Printing credCustIDRecords: ", credCustIDRecords) #this will print the records in the terminal
-            #print("Printing credCustIDRecords type: ", type(credCustIDRecords))
-
-            global cred_custID
-            
-            try:
-                credit_customer_ID = credCustIDRecords[0]
-            except:
-                credit_customer_ID = ''
-
-            credit_customer_ID_str = ''.join(map(str,(credit_customer_ID))) #converting credit_customer_ID tuple to string then int
-        
-            cred_custID = credit_customer_ID_str
-            
-            # Commit changes
-            conn.commit()
-
-            # Close connection
-            conn.close()
-            
-            #print("Printing cred_custID type: ", type(cred_custID))
-            return cred_custID
-
-        
-        # Function to retrieve applicable exchange rate
-        def credExRateFtn(cred_custID, branchID):
-            '''This function should check the tblExRate and provide the client rate or the branch rate'''
-
-            # Creating a database or connect to one
-            conn = sqlite3.connect('petrolstation.db')
-
-            # Create a cursor
-            c = conn.cursor()
-            
-            c.execute("SELECT exRateID, exRate FROM tblExRate WHERE (exRateCredCustID = :cred_custID OR exRateBranID = :branchID)",
-                      {
-                          'cred_custID': cred_custID,
-                          'branchID': branchID
-                      })
-            
-            global exRateRecords
-            exRateRecords = []
-
-            exRateRecords = c.fetchall() #this will store all the records
-            #print("Printing exRateRecords: ", exRateRecords) #this will print the records in the terminal
-                                  
-            # Commit changes
-            conn.commit()
-
-            # Close connection
-            conn.close()
-
-            # getting exRates only
-            global exRateLstCredCust
-            exRateLstCredCust = []
-            for record in exRateRecords:
-                rate = record[1]
-                exRateLstCredCust.append(rate)
-            
-            return exRateLstCredCust
-               
-       
-        # combinded function 
-        def combinedCustIDExRate(e):
-            '''This function listens for an event and returns the applicable exchange rate for the respective credit customer'''
-            if cred_cust_combo.get() != cred_cust_name: 
-                cred_pay_exrate_combo.config(values=credExRateFtn(credCustIDFtn(),1))  
-        
-
-        # clear payment function
-        def clearPaymentFtn():
-            '''This function clears the payment amount text boxes'''
-            cred_pay_dollar_branch1.delete(0,END)
-            cred_pay_cdf_branch1.delete(0,END)
-        
-        
-        # Add payment function
-        def addPaymentFtn():
-            '''This function will get entries and add their values to the TreeView'''
-                                  
-            # Retriving the curreny symbols
-            currSymbolLst = []
-            currSymbolLst = currSymbolFtn('tblCurr', 'currSymbol', 'petrolstation.db', currSymbolLst)
-           
-            # Retriving the debt payment list                       
-            global debt_pay_items_lst_branch1
-
-            # use a while statement to loop thro' 
-            entries = 2
-            while entries > 0:
-                if entries == 2:
-                    if cred_pay_dollar_branch1.get() != '':
-                        customer_ID = cred_custID
-                        customer_name = cred_cust_combo.get()
-                        debt_pay_date = date_editor_branch1.get() #currentDateBranch1
-                        currency_symbol = currSymbolLst[0]
-                        debt_pay_amount = f'{float(cred_pay_dollar_branch1.get()):,.2f}'
-                        exchange_rate = cred_pay_exrate_combo.get()
-                        debt_pay_item = [customer_ID,customer_name,debt_pay_date,currency_symbol,debt_pay_amount,exchange_rate]
-                        cred_pay_tree.insert('',END, values=debt_pay_item) #this inserts the debt_pay_item into the end of the treeview
-                                                
-                        cred_pay_dollar_branch1.delete(0,END) # clears the dollar entry
-                        
-                        debt_pay_items_lst_branch1.append(debt_pay_item)
-
-                        entries -= 1
-
-                    else:
-                        entries -= 1
-                else:
-                    if cred_pay_cdf_branch1.get() != '':
-                        customer_ID = cred_custID
-                        customer_name = cred_cust_combo.get()
-                        debt_pay_date = date_editor_branch1.get() #currentDateBranch1
-                        currency_symbol = currSymbolLst[1]
-                        debt_pay_amount = f'{float(cred_pay_cdf_branch1.get()):,.0f}'
-                        exchange_rate = cred_pay_exrate_combo.get()
-                        debt_pay_item = [customer_ID,customer_name,debt_pay_date,currency_symbol,debt_pay_amount,exchange_rate]
-                        cred_pay_tree.insert('',END, values=debt_pay_item)
-                                                
-                        cred_pay_cdf_branch1.delete(0,END) # clears the cdf entry
-                        
-                        debt_pay_items_lst_branch1.append(debt_pay_item)
-
-                        entries -= 1
-                    else:
-                        entries -= 1
-
-            #print("Printing debt_pay_items_lst_branch1 after adding item: ", debt_pay_items_lst_branch1)
-
-        
-        # cancelPayment function
-        def debtPayCancelFtn():
-            '''This function clears all the fields'''
-            clearPaymentFtn()
-
-            # clearing everything from Treeview
-            cred_pay_tree.delete(*cred_pay_tree.get_children()) # * means all. get.children() will get all the children in each item 
-
-            # clearing debt_pay_items_lst_branch1
-            global debt_pay_items_lst_branch1
-            #print("Printing debt_pay_items_lst_branch1 before canceling: ", debt_pay_items_lst_branch1)
-            debt_pay_items_lst_branch1.clear()
-            #print("Printing debt_pay_items_lst_branch1 after canceling: ", debt_pay_items_lst_branch1)
-            
-        # debtRemoveSelected function
-        def debtRemoveSelectedFtn():
-            ''''This function will remove all the selected records in the Treeview'''
-            # declaring and initializing a variable to keep track of selected items
-            removed_records_lst = cred_pay_tree.selection() # selection() returns a list of treeview indexes of selected items
-            #print('Printing removed records lst: ', removed_records_lst)
-
-            # Defining and initializing a list to store the treeview values of removed items
-            tree_removed_records_lst = []
-
-            # Retrieving the treeview values of removed records
-            tree_removed_records_lst = [list(cred_pay_tree.item(record, 'values')) for record in removed_records_lst] #tree.item(index,'values') will return the values of the tree item with the specified index
-            # list(cred_pay_tree.item(record, 'values')) ensures that the values are wrapped in a list instead of having a list of tupples
-
-            #print("Printing tree_remeoved_records_lst: ", tree_removed_records_lst)                  
-            # updating the debt payment details list to exclude the removed items
-            global debt_pay_items_lst_branch1
-            #print("Printing debt_pay_items_lst_branch1 before removing: ", debt_pay_items_lst_branch1)
-            for item in tree_removed_records_lst:
-                #print("Printing item: ", item)
-                if item in debt_pay_items_lst_branch1: # check if the item is in the list
-                    debt_pay_items_lst_branch1.remove(item) # remove it from the list
-
-
-            #print("Printing Debt payment list After removal: ", debt_pay_items_lst_branch1)
-            
-            # removing selected records in treeview
-            x = cred_pay_tree.selection() 
-            for record in x:
-                #print('Printing index: ', record)
-                #print('Printing treeview values of removed items: ', cred_pay_tree.item(record))
-                cred_pay_tree.delete(record) #will remove each selected record
-            
-          
-        # debtPaySubmit function
-        def debtPaySubitFtn():
-            '''This function will update the database with the credit customer payment details'''
-
-            branchLst = []
-            branchID = int(branchLstFtn('tblBran', 'branName', 'petrolstation.db', branchLst).index(branch_editor_branch1.get())) + 1
-
-            # a) Retrieve the last debt payment ID and saving last debt payment ID 
-            lastDebtPayID = 0           
-            lastDebtPayID = lastIDFtn('tblDebtPay', 'debtPayID', 'petrolstation.db', lastDebtPayID)
-            print("Printing lastDebtPayID after lastIDFtn: ", lastDebtPayID)
-
-            # Declaring and assigning currentDebtPayID
-            try:
-                currentLastDebtPayID = lastDebtPayID
-            except:
-                currentLastDebtPayID = 0 #this will apply when there are no previous records
-
-            #print("Printing currentLastDebtPayID: ", currentLastDebtPayID)
-                
-            # b) Updating the database with the provided debt payment data
-            # debt_pay_item = [customer_ID,customer_name,debt_pay_date,currency_symbol,debt_pay_amount,exchange_rate]
-            
-            # Declaring and initializing variales for keeping track of total amount paid
-            total_debt_dollar_payment = 0
-            total_debt_cdf_payment = 0
-            
-            for item in debt_pay_items_lst_branch1:
-                           
-                # ensuring we have a unique currentLastDebtPayID for every entry
-                currentLastDebtPayID += 1
-                #print("Printing currentLastDebtPayID after + 1: ", currentLastDebtPayID)
-
-                # I) Retrieving the debtPayExRateID
-                #print("Printing exRateLstCredCust: ", exRateLstCredCust)
-                exchangeRateIndex = exRateLstCredCust.index(int(item[5]))
-                #print("Printing exchangeRateIndex: ", exchangeRateIndex)
-                idRecord = exRateRecords[exchangeRateIndex]
-                #print("Printing idRecord: ", idRecord)
-                id = idRecord[0]
-                #print("Printing id: ", id)
-                
-                # II) Retriving the curreny symbols
-                currSymbolLst = []
-                currSymbolLst = currSymbolFtn('tblCurr', 'currSymbol', 'petrolstation.db', currSymbolLst)
-                
-                # III) Updating the Debt Payment table
-                # Creating a database or connect to one
-                conn = sqlite3.connect('petrolstation.db')
-
-                # Create a cursor
-                c = conn.cursor()
-                
-                # Updating the tblDebtPay table                
-                c.execute("INSERT INTO tblDebtPay VALUES (:debtPayID, :debtPayDate, :debtPayBranID, :credCustID, :debtPayCurrID, :debtPayAmt, :debtPayExRateID)",
-                    {
-                        'debtPayID': currentLastDebtPayID,
-                        'debtPayDate': item[2],
-                        'debtPayBranID': branchID,
-                        'credCustID': item[0],
-                        'debtPayCurrID': currSymbolLst.index(item[3]) + 1, #index returns the index of the first occurence of the thing being searched for. we add 1 since list index starts with 0
-                        'debtPayAmt': item[4],
-                        'debtPayExRateID': id
-                    })
-
-                # Commit changes
-                conn.commit()
-
-                # Close connection
-                conn.close()
-
-
-                # IV) Keeping track of the total amount of money paid
-                # using a while and an if/else to differenciate the currencies
-                print("Printing item: ", item)
-                entries = 2
-                while entries > 0:
-                    if item[3] == '$':
-                        total_debt_dollar_payment += float(item[4].replace(',',''))
-                        print("Printing total_debt_dollar_payment: ", total_debt_dollar_payment)
-                        item[3] = ''
-                        entries -= 1
-                    elif item[3] == 'CDF':
-                        total_debt_cdf_payment += int(item[4].replace(',',''))
-                        print("Printing total_debt_cdf_payment: ", total_debt_cdf_payment)
-                        item[3] = ''
-                        entries -= 1
-                    else:
-                        entries -= 1
-                           
-                # V) Updating the credit customer details table with the debt payment data
-                
-                # Retrieving last credit customer detail ID
-                lastCredCustDetailID = 0
-                lastCredCustDetailID = lastIDFtn('tblCredCustDetails', 'credCustDetailID', 'petrolstation.db', lastCredCustDetailID)
-
-                # Declaring and assigning currentDebtPayID
-                try:
-                    currentLastCredCustDetailID = lastCredCustDetailID
-                except:
-                    currentLastCredCustDetailID = 0 #this will apply when there are no previous records
-
-                currentLastCredCustDetailID += 1
-
-                # Creating a database or connect to one
-                conn = sqlite3.connect('petrolstation.db')
-
-                # Create a cursor
-                c = conn.cursor()
-                
-                # Updating the tblCredCustDetail table                    
-                c.execute("INSERT INTO tblCredCustDetails VALUES (:credCustDetailID, :credCustID, :credCustProdID, :credCustCurrID, :credCustPrice, :credCustPriceDate, :saleID, :indirectCustID, :debtPayID, :credCustCurrentBal, :credCustCurrentBalDate)",
-                          {
-                              'credCustDetailID': currentLastCredCustDetailID,
-                              'credCustID': item[0],
-                              'credCustProdID': 'NULL',
-                              'credCustCurrID': 'NULL',
-                              'credCustPrice': 'NULL',
-                              'credCustPriceDate': 'NULL',
-                              'saleID': 'NULL',
-                              'indirectCustID': 'NULL',
-                              'debtPayID': currentLastDebtPayID,
-                              'credCustCurrentBal': 'NULL',
-                              'credCustCurrentBalDate': 'NULL'
-                          })
-
-                # Commit changes
-                conn.commit()
-
-                # Close connection
-                conn.close()
-                
-
-            # c) Clear all text boxes and the treeview
-            debtPayCancelFtn()
-
-            # d) Updating the cummulative payments label 
-            global total_cummulative_dollar_payments_branch1
-            global total_cummulative_cdf_payments_branch1
-
-            if total_debt_dollar_payment != 0:
-                total_cummulative_dollar_payments_branch1 = total_cummulative_dollar_payments_branch1 + total_debt_dollar_payment
-            else:
-                total_cummulative_dollar_payments_branch1 = total_cummulative_dollar_payments_branch1
-                
-            if total_debt_cdf_payment != 0:    
-                total_cummulative_cdf_payments_branch1 = total_cummulative_cdf_payments_branch1 + total_debt_cdf_payment
-            else:
-                total_cummulative_cdf_payments_branch1 = total_cummulative_cdf_payments_branch1
-
-            print("Printing total_cummulative_dollar_payments_branch1: ", total_cummulative_dollar_payments_branch1)
-            print("Printing total_cummulative_cdf_payments_branch1: ", total_cummulative_cdf_payments_branch1)
-            
-            cummulative_dollar_payments_branch1.config(text=total_cummulative_dollar_payments_branch1)
-            cummulative_cdf_payments_branch1.config(text=total_cummulative_cdf_payments_branch1)    
-
-            # e) close debt pay window
-            editor_debt_payment_branch1.destroy()
-
-
-        # MAIN FRAME
-        frame = Frame(editor_debt_payment_branch1)
-        frame.pack()
-
-        # creating labels
-        cred_cust_name_label = Label(frame, text="Customer Name")
-        cred_cust_name_label.grid(row=0, column=0)
-        dollar_sign_label = Label(frame, text=" $ ")
-        dollar_sign_label.grid(row=0, column=1)
-        cdf_sign_label = Label(frame, text="CDF")
-        cdf_sign_label.grid(row=0, column=2)
-        exRate_label    = Label(frame, text="Exchange Rate")
-        exRate_label.grid(row=0, column=3)
-
-        #global               
-        global cred_cust_name         
-        cred_cust_name = ""
-
-        global credCustLst
-        credCustLst = []
-
-        # creating combobox
-        cred_cust_combo = ttk.Combobox(frame, values=custFtn('tblCredCust', 'credCustName','petrolstation.db', credCustLst))
-        cred_cust_combo.grid(row=1, column=0)
-        cred_cust_combo.current(0) #this sets the first value as the default
-        cred_cust_combo.bind('<<ComboboxSelected>>', combinedCustIDExRate) #binding tires this combobox to another action. <<ComboboxSelected>> is the binding and credCustIDFtn() is the action to be taken when the binding occurs
-
-        # creating text box
-        cred_pay_dollar_branch1 = Entry(frame, width=30)
-        cred_pay_dollar_branch1.grid(row=1, column=1)
-        cred_pay_cdf_branch1 = Entry(frame, width=30)
-        cred_pay_cdf_branch1.grid(row=1, column=2)
-
-        # creating combobox
-        cred_pay_exrate_combo = ttk.Combobox(frame, values=[""])
-        cred_pay_exrate_combo.current(0) #setting default value
-        cred_pay_exrate_combo.grid(row=1, column=3)
-        
-        
-        # Declare and initialize variable for storing debt payment details
-        global debt_pay_items_lst_branch1
-        debt_pay_items_lst_branch1 = []
-
-        # creating button
-        cred_pay_addpayment_btn = Button(frame, text="Add Payment", command=addPaymentFtn)
-        cred_pay_addpayment_btn.grid(row=2, column=3, pady=5)
-
-        # TREEVIEW FRAME
-        treeview_frame = Frame(frame)
-        treeview_frame.grid(row=3, column=0, columnspan=4, padx=20, pady=10)
-        
-        # creating treeview scrollbar
-        tree_scroll = Scrollbar(treeview_frame)
-        tree_scroll.pack(side=RIGHT, fill=Y) #fill=Y means it scroll vertically
-        
-        # add some style
-        style = ttk.Style()
-
-        # pick a theme
-        style.theme_use('default')
-
-        # creating Treeview
-        columns = ["credCustID", "credCustName", "debtPayDate", "currSymbol", "debtPayAmt", "debtPayExRateID"]
-        cred_pay_tree = ttk.Treeview(treeview_frame, yscrollcommand=tree_scroll.set, columns=columns, show="headings")
-        cred_pay_tree.pack()
-        
-        # configure scrollbar
-        tree_scroll.config(command=cred_pay_tree.yview)
-        
-        cred_pay_tree.heading('credCustID', text='CustomerID')
-        cred_pay_tree.heading('credCustName', text='Customer Name')
-        cred_pay_tree.heading('debtPayDate', text='Date')
-        cred_pay_tree.heading('currSymbol', text='Currency Symbol')
-        cred_pay_tree.heading('debtPayAmt', text='Amount')
-        cred_pay_tree.heading('debtPayExRateID', text='Exchange Rate')
-
-       
-        # THIRD FRAME
-        button_frame = Frame(frame)
-        button_frame.grid(row=4, column=0, columnspan=4, pady=(10,10), sticky="news", padx=20)
-        
-        # creating buttons
-        remove_selected = Button(button_frame, text="Remove Selected", command=debtRemoveSelectedFtn)
-        remove_selected.grid(row=0, column=0, padx=10, ipadx=160)
-        
-        cancel_btn = Button(button_frame, text="Cancel", command=debtPayCancelFtn)
-        cancel_btn.grid(row=0, column=1, padx=10, ipadx=160)
-
-        submit_btn = Button(button_frame, text="Submit", command=debtPaySubitFtn)
-        submit_btn.grid(row=0, column=2, padx=10, ipadx=160)
-
        # DATA QUALITY CHECK
         # Ensuring any user input in the cdf text box is divisible by 50; there lowest denomination
         """ if cred_pay_cdf_branch1.get() != '':
@@ -2263,7 +1895,7 @@ def branchFtn():
 
             # Retrieving the treeview values of removed records
             tree_removed_records_lst = [list(adva_pay_tree.item(record, 'values')) for record in removed_records_lst] #tree.item(index,'values') will return the values of the tree item with the specified index
-            # list(adva_pay_tree.item(record, 'values')) ensures that the values are wrapped in a list instead of having a list of tupples
+            # list(adva_pay_tree.item(record, 'values')) ensures that the values are wrapped in a list instead of having a list of tuples
             
             # updating the advance payment details list to exclude the removed items
             global adva_pay_items_lst_branch1
@@ -3758,6 +3390,667 @@ def branchFtn():
         submit_btn.grid(row=0, column=2, padx=10, ipadx=160)
     
     
+
+    # Creating debtSalesFtn function
+    def debtSalesFtn():
+        '''This function launches the debt sales window which is used in entering debt sales data'''
+        
+        # EDITOR_DEBT_SALES_BRANCH1 WINDOW
+
+        # Creating a new window Debt Sales
+        global editor_debt_sales_branch1 #need it to be global so that we can use editor.destroy 
+        editor_debt_sales_branch1 = Tk() #this is the main window its also the first line to put when working with tkinter
+        editor_debt_sales_branch1.title('Debt Sales Place') #this is the title of the window
+
+        
+        # FUNCTIONS
+        # Function for providing credit customer ID given customer name
+        def credCustIDFtn():
+            '''This function returns a credit customer ID given the customer name'''
+            # getting customer name from cred_cust_combo
+            cred_cust_name = cred_cust_combo.get()
+
+            # Querying the credit customer table to find customer ID 
+            # Creating a database or connect to one
+            conn = sqlite3.connect('petrolstation.db')
+
+            # Create a cursor
+            c = conn.cursor()
+            
+            c.execute("SELECT credCustID FROM tblCredCust WHERE credCustName = :cred_cust_name", 
+                      {
+                          'cred_cust_name': cred_cust_name
+                      }) 
+            
+            credCustIDRecords = c.fetchall() #this will store all the records
+            #print("Printing credCustIDRecords: ", credCustIDRecords) #this will print the records in the terminal
+            #print("Printing credCustIDRecords type: ", type(credCustIDRecords))
+
+            global cred_custID
+            
+            try:
+                credit_customer_ID = credCustIDRecords[0]
+            except:
+                credit_customer_ID = ''
+
+            credit_customer_ID_str = ''.join(map(str,(credit_customer_ID))) #converting credit_customer_ID tuple to string then int
+        
+            cred_custID = credit_customer_ID_str
+            
+            # Commit changes
+            conn.commit()
+
+            # Close connection
+            conn.close()
+            
+            #print("Printing cred_custID type: ", type(cred_custID))
+            return cred_custID 
+
+        
+        # Function to retrieve applicable exchange rates
+        def credExRateFtn(cred_custID, branchID):
+            '''This function should check the tblExRate and provide the client rate or the branch rate'''
+            # Need to review to have a date dimension.
+            #print("Printing cred_custID: ",cred_custID)
+            #print("Printing branchID: ", branchID)
+            # Creating a database or connect to one
+            conn = sqlite3.connect('petrolstation.db')
+
+            # Create a cursor
+            c = conn.cursor()
+            
+            query = "SELECT exRateID, exRate FROM {} WHERE (exRateCredCustID = ? OR exRateBranID = ?) ORDER BY exRateID DESC LIMIT 1".format('tblExRate')
+            c.execute(query, (cred_custID,branchID))
+                                  
+            #global exRateRecords
+            exRateRecords = []
+
+            exRateRecords = c.fetchall() #this will store all the records
+            #print("Printing exRateRecords line 3378: ", exRateRecords) #this will print the records in the terminal
+                                  
+            # Commit changes
+            conn.commit()
+
+            # Close connection
+            conn.close()
+
+            # getting exRates only
+            #global exRateLstCredCust
+            exRateLstCredCust = []
+            for record in exRateRecords:
+                #print("Printing record line 3390: ", record)
+                rate = record[1]
+                exRateLstCredCust.append(rate)
+            
+            return rate
+
+
+        # Function to retrieve applicable exchange rate IDs
+        def credExRateIDFtn(cred_custID, branchID, rate):
+            '''This function should check the tblExRate and provide the exchange rate ID given the credit customer ID, branchID and rate'''
+            # Need to review to have a date dimension.
+            print("Printing cred_custID: ",cred_custID)
+            print("Printing branchID: ", branchID)
+            print("Printing rate: ", rate)
+            # Creating a database or connect to one
+            conn = sqlite3.connect('petrolstation.db')
+
+            # Create a cursor
+            c = conn.cursor()
+            
+            query = "SELECT exRateID FROM {} WHERE exRate = ? AND (exRateCredCustID = ? OR exRateBranID = ?)  ORDER BY exRateID DESC LIMIT 1".format('tblExRate')
+            c.execute(query, (rate,cred_custID,branchID))
+                                  
+            #global exRateRecords
+            exRateRecords = []
+
+            exRateRecords = c.fetchall() #this will store all the records
+            print("Printing exRateRecords line 3378: ", exRateRecords) #this will print the records in the terminal
+                                  
+            # Commit changes
+            conn.commit()
+
+            # Close connection
+            conn.close()
+
+            # getting exRates only
+            #global exRateLstCredCust
+            exRateLstCredCust = []
+            for record in exRateRecords:
+                print("Printing record line 3390: ", record)
+                ID = record[0]
+                exRateLstCredCust.append(ID)
+            
+            return ID
+        
+
+        # custCurrPriceFtn
+        def custCurrPriceFtn(tblCustomer, customerID, priceDate, prodID, currPriceLst):
+            '''This function should provide the client product price and currency when provided with the 
+            customer table name, customer ID, applicable date, product ID and output list name'''
+
+            # Creating a database or connect to one
+            conn = sqlite3.connect('petrolstation.db')
+
+            # Create a cursor
+            c = conn.cursor()
+            
+             # Use parameterized query to avoid syntax errors and SQL injection
+            query = "SELECT credCustCurrID, credCustPrice FROM {0} WHERE credCustID = ? AND (credCustPriceDate = ? OR credCustPriceDate > ?) AND credCustProdID = ? ORDER BY credCustDetailID ASC".format(tblCustomer)
+            c.execute(query, (customerID, priceDate, priceDate, prodID))
+
+            #print("Printing customerID {0}, priceDate {1}, prodID {2}".format(customerID, priceDate, prodID))
+            recordsLst_tuple = c.fetchall()
+            #print("Printing recordsLst line 3415: ", recordsLst_tuple)
+
+            recordsLst_of_lst = []
+            recordsLst_of_lst = [list(record) for record in recordsLst_tuple]
+            #print("Printing recordsLst_of_lst line 3420: ", recordsLst_of_lst)
+
+            currPriceLst = []
+            for record in recordsLst_of_lst:
+               for item in record:
+                   currPriceLst.append(item)
+            
+            print("Printing currPriceLst line 3426: ", currPriceLst)
+
+            # Commit changes
+            conn.commit()
+
+            # Close connection
+            conn.close()
+
+            return currPriceLst
+        
+                   
+        # clear payment function
+        def clearSaleFtn():
+            '''This function clears the sales liter amount text boxes'''
+            cred_sale_ltr.delete(0,END)
+        
+        
+        # Add payment function
+        def addSaleFtn():
+            '''This function will get entries and add their values to the TreeView'''
+
+            # a) Performing retrievals                      
+            # Retrieving the curreny symbols
+            currSymbolLst = []
+            currSymbolLst = currSymbolFtn('tblCurr', 'currSymbol', 'petrolstation.db', currSymbolLst)
+
+            # Retrieving the product list
+            prodLst = []
+            prodLst = prodFtn('tblProd', 'prodName', 'petrolstation.db', prodLst)
+            print("Printing prodLst: ", prodLst)
+
+            # Retrieving the credit customer ID
+            cred_custID = credCustIDFtn()
+           
+            # Retrieving credit customer product currency and price
+            tblCustomer = 'tblCredCustDetails'
+            customerID =  cred_custID
+            priceDate = date_editor_branch1.get()
+            prodID = int(prodLst.index(prod_clicked.get())) + 1
+            currPriceLst = []
+            currPriceLst = custCurrPriceFtn(tblCustomer, customerID, priceDate, prodID, currPriceLst)
+
+            # Retrieving the exchange rate
+            branchLst = []
+            branchID = int(branchLstFtn('tblBran', 'branName', 'petrolstation.db', branchLst).index(branch_editor_branch1.get())) + 1
+            credExRate = credExRateFtn(cred_custID, branchID)
+
+            # Declaring and initializing the credit sale list                       
+            global cred_sale_items_lst_branch1
+
+            # b) Updating the sales to the treeview
+            # use a while statement to loop thro' 
+            entries = 1
+            while entries > 0:
+                if entries == 1:
+                    if cred_sale_ltr.get() != '':
+                        customer_ID = cred_custID
+                        customer_name = cred_cust_combo.get()
+                        cred_sale_date = date_editor_branch1.get() #currentDateBranch1
+                        cred_sale_prod = prod_clicked.get()
+                        currency_symbol = currSymbolLst[int(currPriceLst[0])-1]
+                        cred_sale_price = currPriceLst[1]                       
+                        cred_sale_liter = cred_sale_ltr.get()
+                        cred_exchage_rate = credExRate
+                        cred_sale_item = [customer_ID, customer_name, cred_sale_date, cred_sale_prod,currency_symbol,cred_sale_price,cred_sale_liter,cred_exchage_rate]
+                        cred_sale_tree.insert('',END, values=cred_sale_item) #this inserts the cred_sale_item into the end of the treeview
+                                                
+                        cred_sale_ltr.delete(0,END) # clears the sales liter amount entry
+                        
+                        cred_sale_items_lst_branch1.append(cred_sale_item)
+
+                        entries -= 1
+
+                    else:
+                        entries -= 1
+               
+                    
+            print("Printing cred_sale_items_lst_branch1 after adding item: ", cred_sale_items_lst_branch1)
+
+        
+        # cancelPayment function
+        def debtSaleCancelFtn():
+            '''This function clears all the fields'''
+            clearSaleFtn()
+
+            # clearing everything from Treeview
+            cred_sale_tree.delete(*cred_sale_tree.get_children()) # * means all. get.children() will get all the children in each item 
+
+            # clearing cred_sale_items_lst_branch1
+            global cred_sale_items_lst_branch1
+            #print("Printing cred_sale_items_lst_branch1 before canceling: ", cred_sale_items_lst_branch1)
+            cred_sale_items_lst_branch1.clear()
+            #print("Printing cred_sale_items_lst_branch1 after canceling: ", cred_sale_items_lst_branch1) """
+            
+        # debtRemoveSelected function
+        def debtSaleRemoveSelectedFtn():
+            '''This function will remove all the selected records in the Treeview'''
+            # declaring and initializing a variable to keep track of selected items
+            removed_records_lst = cred_sale_tree.selection() # selection() returns a list of treeview indexes of selected items
+            print('Printing removed records lst: ', removed_records_lst)
+
+            # Defining and initializing a list to store the treeview values of removed items
+            tree_removed_records_lst = []
+
+            # Retrieving the treeview values of removed records
+            tree_removed_records_lst = [list(cred_sale_tree.item(record, 'values')) for record in removed_records_lst] #tree.item(index,'values') will return the values of the tree item with the specified index
+            # list(cred_pay_tree.item(record, 'values')) ensures that the values are wrapped in a list instead of having a list of tupples
+            print("Printing tree_remeoved_records_lst: ", tree_removed_records_lst)                  
+            
+            # updating the debt sale details list to exclude the removed items
+            global cred_sale_items_lst_branch1
+            print("Printing cred_sale_items_lst_branch1 before removing: ", cred_sale_items_lst_branch1)
+            for item in tree_removed_records_lst:
+                #print("Printing item: ", item)
+                if item in cred_sale_items_lst_branch1: # check if the item is in the list
+                    cred_sale_items_lst_branch1.remove(item) # remove it from the list
+
+
+            print("Printing Credit Sale list After removal: ", cred_sale_items_lst_branch1)
+            
+            # removing selected records in treeview
+            x = cred_sale_tree.selection() 
+            for record in x:
+                print('Printing index: ', record)
+                print('Printing treeview values of removed items: ', cred_sale_tree.item(record))
+                cred_sale_tree.delete(record) #will remove each selected record
+
+          
+        # debtPaySubmit function
+        def debtSaleSubitFtn():
+            '''This function will update the database with the credit customer sales details'''
+
+            # a) Retrieve data
+
+            # Retrieving the branch ID
+            branchLst = []
+            branchID = int(branchLstFtn('tblBran', 'branName', 'petrolstation.db', branchLst).index(branch_editor_branch1.get())) + 1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+            # The last transaction ID and saving last tranaction ID 
+            lastTransID = 0           
+            lastTransID = lastIDFtn('tblSaleTransaction', 'transID', 'petrolstation.db', lastTransID)
+            print("Printing lastTransID after lastIDFtn: ", lastTransID)
+
+            # Declaring and assigning currentTransSaleID
+            try:
+                currentTransSaleID = lastTransID
+            except:
+                currentTransSaleID = 0 #this will apply when there are no previous records
+
+            print("Printing currentTransSaleID: ", currentTransSaleID)
+
+            # Retrieving the curreny symbols
+            currSymbolLst = []
+            currSymbolLst = currSymbolFtn('tblCurr', 'currSymbol', 'petrolstation.db', currSymbolLst)
+
+            # Retrieving the product list
+            prodLst = []
+            prodLst = prodFtn('tblProd', 'prodName', 'petrolstation.db', prodLst)
+            #print("Printing prodLst: ", prodLst)
+
+                
+            # b) Updating the database with the provided credit sale data
+            # We will update two tables: tblSaleTransaction and tblCredCustDetails
+            # cred_sale_item = [customer_ID, customer_name, cred_sale_date, cred_sale_prod,currency_symbol,cred_sale_price,cred_sale_liter,cred_exchage_rate]
+            
+            # Declaring and initializing variales for keeping track of total liters sold
+            total_cred_sale_pms_ltr = 0
+            total_cred_sale_ago_ltr = 0
+            
+            for item in cred_sale_items_lst_branch1:
+                           
+                # ensuring we have a unique currentTransSaleID for every entry
+                currentTransSaleID += 1
+                print("Printing currentTransSaleID after + 1: ", currentTransSaleID)
+
+                # I) Retrieving the exchange rate ID
+
+                # Retrieving the exchange rate ID
+                cred_custID = item[0]
+                rate = item[7]
+                ID = credExRateIDFtn(cred_custID, branchID, rate)
+                print("Printing ID: ", ID)
+                
+                
+                # II) Retrieving the curreny symbols and saving currency ID
+                currencyID = int(currSymbolLst.index(item[4]) + 1)
+
+
+                # III) Retrieving the products and saving product ID
+                productID = int(prodLst.index(item[3]) + 1)
+                
+                
+                # IV) Updating the Transaction Sale table
+                # Creating a database or connect to one
+                conn = sqlite3.connect('petrolstation.db')
+
+                # Create a cursor
+                c = conn.cursor()
+                
+                # Updating the tblSaleTransaction table                
+                c.execute("INSERT INTO tblSaleTransaction VALUES (:transID, :transDate, :transBranID, :transCredCustID, :transAdvCustID, :transOneOffCustID, :transIndirectCustID, :transProdID, :transCurrID, :transPrice, :transLtr, :transExRateID)",
+                    {
+                        'transID': currentTransSaleID,
+                        'transDate': item[2],
+                        'transBranID': branchID,
+                        'transCredCustID': item[0],
+                        'transAdvCustID': 'NULL',
+                        'transOneOffCustID': 'NULL',
+                        'transIndirectCustID': 'NULL',
+                        'transProdID': productID,
+                        'transCurrID': currencyID,
+                        'transPrice': item[5],
+                        'transLtr': item[6],
+                        'transExRateID': item[7]
+                    })
+
+                # Commit changes
+                conn.commit()
+
+                # Close connection
+                conn.close()
+                print("Finished updating the transaction table item.....................")
+
+
+                # V) Calculating the credit customer balance after factoring sales
+                
+                # Determining the Current Credit Balance
+                # cred_sale_item = [customer_ID, customer_name, cred_sale_date, cred_sale_prod,currency_symbol,cred_sale_price,cred_sale_liter,cred_exchage_rate]
+                # Need to figure out how to treat sales that are in francs as there could be need for rounding of figures
+                
+                currentCredBal = 0.0 #ensuring every time this function runs the currentCredBal is 0.0 
+                float_lastCurrentCredBalFtn = 0.0
+                try:
+                    cleaned_Ltr = float(item[6].replace(',',''))
+                except:
+                    cleaned_Ltr = item[6]
+
+                print("Printing cleaned_Ltr: ", cleaned_Ltr)
+
+                # Using an if/else to differentiate transactions in different currencies. (Assumption CurrID 1 = $ and currID 2 is local currency)
+                if item[4] == '$': # dollar price
+                    try:
+                        cleaned_price = float(item[5].replace(',',''))
+                    except:
+                        cleaned_price = item[5]
+                else: # local currency 
+                    try:
+                        cleaned_price = int(float(item[5].replace(',','')))
+                    except:
+                        cleaned_price = int(item[5])
+
+                print("Printing cleaned_price: ",cleaned_price)
+
+                # Cleaned amount
+
+                cleaned_amount = cleaned_Ltr * cleaned_price
+                print("Printing cleaned_amount: ", cleaned_amount)
+
+                # Getting the CurrentCredBal
+
+                print("Printing item[0] line 3815: ", item[0])
+                print("Printing float_lastCurrentCredBalFtn Before function line 3816: ", float_lastCurrentCredBalFtn)
+                float_lastCurrentCredBalFtn = float(lastCurrentCredBalFtn('tblCredCustDetails', 'credCustDetailID', 'credCustCurrentBal', 'petrolstation.db', 'credCustID', item[0]))
+                print("Printing float_lastCurrentCredBalFtn After line 3818: ", float_lastCurrentCredBalFtn)
+                print("Printing currentCredBal Before addition line 3819: ", currentCredBal)
+                currentCredBal =  float_lastCurrentCredBalFtn + cleaned_amount
+                print("Printing currentCredBal After addition line 3821: ", currentCredBal)
+                currentCredBalDatetime = datetime.datetime.now()
+                
+                
+                # VI) Updating the credit customer details table with the transaction sales details
+                
+                # Retrieving last credit customer detail ID
+                lastCredCustDetailID = 0
+                lastCredCustDetailID = lastIDFtn('tblCredCustDetails', 'credCustDetailID', 'petrolstation.db', lastCredCustDetailID)
+
+                # Declaring and assigning currentCredCustDetailID
+                try:
+                    currentLastCredCustDetailID = lastCredCustDetailID
+                except:
+                    currentLastCredCustDetailID = 0 #this will apply when there are no previous records
+
+                currentLastCredCustDetailID += 1
+
+                # cred_sale_item = [customer_ID, customer_name, cred_sale_date, cred_sale_prod,currency_symbol,cred_sale_price,cred_sale_liter,cred_exchage_rate]
+                # Creating a database or connect to one
+                conn = sqlite3.connect('petrolstation.db')
+
+                # Create a cursor
+                c = conn.cursor()
+                
+                # Updating the tblCredCustDetail table                    
+                c.execute("INSERT INTO tblCredCustDetails VALUES (:credCustDetailID, :credCustID, :credCustProdID, :credCustCurrID, :credCustPrice, :credCustPriceDate, :transID, :indirectCustID, :debtPayID, :credCustCurrentBal, :credCustCurrentBalDate)",
+                          {
+                              'credCustDetailID': currentLastCredCustDetailID,
+                              'credCustID': item[0],
+                              'credCustProdID': 'NULL',
+                              'credCustCurrID': 'NULL',
+                              'credCustPrice': 'NULL',
+                              'credCustPriceDate': 'NULL',
+                              'transID': currentTransSaleID,
+                              'indirectCustID': 'NULL',
+                              'debtPayID': 'NULL',
+                              'credCustCurrentBal': currentCredBal,
+                              'credCustCurrentBalDate': currentCredBalDatetime
+                          })
+
+                # Commit changes
+                conn.commit()
+
+                # Close connection
+                conn.close()
+                print("Finished updating Credit Customer Details Table.........................")
+
+                # VIi) Keeping track of the total credit customer liters sold
+                # using a while and an if/else to differenciate the products
+                print("Printing item: ", item)
+                entries = 1
+                while entries > 0:
+                    if productID == 1:
+                        total_cred_sale_pms_ltr += float(item[6].replace(',',''))
+                        print("Printing total_cred_sale_pms_ltr: ", total_cred_sale_pms_ltr)
+                        item[6] = ''
+                        entries -= 1
+                    elif productID == 2:
+                        total_cred_sale_ago_ltr += int(item[4].replace(',',''))
+                        print("Printing total_cred_sale_ago_ltr: ", total_cred_sale_ago_ltr)
+                        item[6] = ''
+                        entries -= 1
+                    else:
+                        entries -= 1
+                           
+                
+
+            # c) Clear all text boxes and the treeview
+            debtSaleCancelFtn()
+
+
+            """ # d) Updating the cummulative payments label 
+            global total_cummulative_dollar_payments_branch1
+            global total_cummulative_cdf_payments_branch1
+
+            if total_debt_dollar_payment != 0:
+                total_cummulative_dollar_payments_branch1 = total_cummulative_dollar_payments_branch1 + total_debt_dollar_payment
+            else:
+                total_cummulative_dollar_payments_branch1 = total_cummulative_dollar_payments_branch1
+                
+            if total_debt_cdf_payment != 0:    
+                total_cummulative_cdf_payments_branch1 = total_cummulative_cdf_payments_branch1 + total_debt_cdf_payment
+            else:
+                total_cummulative_cdf_payments_branch1 = total_cummulative_cdf_payments_branch1
+
+            print("Printing total_cummulative_dollar_payments_branch1: ", total_cummulative_dollar_payments_branch1)
+            print("Printing total_cummulative_cdf_payments_branch1: ", total_cummulative_cdf_payments_branch1)
+            
+            cummulative_dollar_payments_branch1.config(text=total_cummulative_dollar_payments_branch1)
+            cummulative_cdf_payments_branch1.config(text=total_cummulative_cdf_payments_branch1)     """
+
+            # e) close debt sale window
+            editor_debt_sales_branch1.destroy()
+
+
+        # MAIN FRAME
+        frame = Frame(editor_debt_sales_branch1)
+        frame.pack()
+
+        # creating labels
+        cred_cust_name_label = Label(frame, text="Customer Name")
+        cred_cust_name_label.grid(row=0, column=0)
+        prod = Label(frame, text="Product")
+        prod.grid(row=0, column=2)
+        ltr = Label(frame, text="Liters")
+        ltr.grid(row=0, column=4)
+        #exRate_label    = Label(frame, text="Exchange Rate")
+        #exRate_label.grid(row=0, column=3)
+
+        #global               
+        #global cred_cust_name         
+        cred_cust_name = ""
+
+        #global credCustLst
+        credCustLst = []
+
+        prodLst = []
+        prodLst = prodFtn('tblProd', 'prodName', 'petrolstation.db', prodLst)
+        print("Printing prodLst: ", prodLst)
+
+        # creating combobox
+        cred_cust_combo = ttk.Combobox(frame, values=custFtn('tblCredCust', 'credCustName','petrolstation.db', credCustLst))
+        cred_cust_combo.grid(row=0, column=1)
+        cred_cust_combo.current(0) #this sets the first value as the default
+        #cred_cust_combo.bind('<<ComboboxSelected>>', combinedCustIDExRate) #binding tires this combobox to another action. <<ComboboxSelected>> is the binding and credCustIDFtn() is the action to be taken when the binding occurs
+
+        # creating optionmenu
+        #a Tkinter variable
+        prod_clicked = StringVar()
+        prod_clicked.set(prodLst[0])
+        cred_prod_option = OptionMenu(frame, prod_clicked, *prodLst)
+        cred_prod_option.grid(row=0, column=3)
+        cred_prod_option.config(width=10)
+
+        #print("Printing product list: ", prod_clicked.get())
+
+        # creating text box
+        cred_sale_ltr = Entry(frame, width=30)
+        cred_sale_ltr.grid(row=0, column=5)
+
+                       
+        # Declare and initialize variable for storing debt sales details
+        global cred_sale_items_lst_branch1
+        cred_sale_items_lst_branch1 = []
+
+        # creating button
+        cred_sale_addsale_btn = Button(frame, text="Add Transaction", command=addSaleFtn)
+        cred_sale_addsale_btn.grid(row=1, column=5, pady=5)
+
+        # TREEVIEW FRAME
+        treeview_frame = Frame(frame)
+        treeview_frame.grid(row=3, column=0, columnspan=6, padx=20, pady=10)
+        
+        # creating treeview scrollbar
+        tree_scroll = Scrollbar(treeview_frame)
+        #tree_scroll.pack(side=RIGHT, fill=Y) #fill=Y means it scroll vertically
+        tree_scroll.grid(row=0, column=9, sticky="ns")
+        
+        # add some style
+        style = ttk.Style()
+
+        # pick a theme
+        style.theme_use('default')
+
+        # creating Treeview
+        columns = ["credCustID", "credCustName", "transDate", "product", "currSymbol", "transPrice", "transLtr", "transExRateID"]
+        cred_sale_tree = ttk.Treeview(treeview_frame, yscrollcommand=tree_scroll.set, columns=columns, show="headings")
+        #cred_sale_tree.pack()
+        cred_sale_tree.grid(row=0, column=0, columnspan=8)
+        
+        # configure scrollbar
+        tree_scroll.config(command=cred_sale_tree.yview)
+
+        # format Treeview columns
+        #cred_sale_tree.column("transID", anchor=E, width=90)
+        cred_sale_tree.column("credCustID", anchor=E, width=90)
+        cred_sale_tree.column("credCustName", anchor=CENTER, width=170)
+        cred_sale_tree.column("transDate", anchor=CENTER, width=120)
+        cred_sale_tree.column("product", anchor=CENTER, width=120)
+        cred_sale_tree.column("currSymbol", anchor=CENTER, width=120)
+        cred_sale_tree.column("transPrice", anchor=E, width=120)
+        cred_sale_tree.column("transLtr", anchor=CENTER, width=120)
+        cred_sale_tree.column("transExRateID", anchor=E, width=120)
+        
+        # create Treeview headings
+        #cred_sale_tree.heading('transID', text='TransactionID')
+        cred_sale_tree.heading('credCustID', text='CustomerID')
+        cred_sale_tree.heading('credCustName', text='Customer Name')
+        cred_sale_tree.heading('transDate', text='Date')
+        cred_sale_tree.heading('product', text='Product')
+        cred_sale_tree.heading('currSymbol', text='Currency Symbol')
+        cred_sale_tree.heading('transPrice', text='Price')
+        cred_sale_tree.heading('transLtr', text='Liters')
+        cred_sale_tree.heading('transExRateID', text='Exchange Rate')
+
+       
+        # THIRD FRAME
+        button_frame = Frame(frame)
+        button_frame.grid(row=4, column=0, columnspan=6, pady=(10,10), sticky="news", padx=20)
+        
+        # creating buttons
+        remove_selected = Button(button_frame, text="Remove Selected", command=debtSaleRemoveSelectedFtn)
+        remove_selected.grid(row=0, column=0, padx=10, ipadx=140)
+        
+        cancel_btn = Button(button_frame, text="Cancel", command=debtSaleCancelFtn)
+        cancel_btn.grid(row=0, column=1, padx=10, ipadx=140)
+
+        submit_btn = Button(button_frame, text="Submit", command=debtSaleSubitFtn)
+        submit_btn.grid(row=0, column=2, padx=10, ipadx=140)
+ 
+
+
+    # Creating advanceSalesFtn function
+    def advanceSalesFtn():
+        pass 
+
+
+    # Creating oneoffSalesFtn function
+    def oneoffSalesFtn():
+        pass 
+
+
+    # Creating indirectSalesFtn function
+    def indirectSalesFtn():
+        pass 
+
+
+    # Creating cashSalesFtn function
+    def cashSalesFtn():
+        pass 
+
+
     # MAIN FRAME
 
     frame = Frame(editor_branch1)
@@ -3773,26 +4066,28 @@ def branchFtn():
     date_label.grid(row=0, column=0)
     branch_label = Label(index_info_frame, text="Branch")
     branch_label.grid(row=0, column=2)
-    pump1_label = Label(index_info_frame, text="Pump I")
-    pump1_label.grid(row=1, column=0, pady=(5,0), columnspan=2, ipadx=120)
+    pumps_label = Label(index_info_frame, text="Pumps")
+    pumps_label.grid(row=0, column=4, padx=5)
+    #pump1_label = Label(index_info_frame, text="Pump I")
+    #pump1_label.grid(row=1, column=0, pady=(5,0), columnspan=2, ipadx=120)
     pump1_pms_label = Label(index_info_frame, text="PMS")
-    pump1_pms_label.grid(row=2, column=0)
+    pump1_pms_label.grid(row=1, column=0)
     pump1_ago_label = Label(index_info_frame, text="AGO")
-    pump1_ago_label.grid(row=2, column=2)
+    pump1_ago_label.grid(row=1, column=2)
         
-    pump2_label = Label(index_info_frame, text="Pump II")
-    pump2_label.grid(row=3, column=0, columnspan=2, ipadx=120)
+    #pump2_label = Label(index_info_frame, text="Pump II")
+    #pump2_label.grid(row=3, column=0, columnspan=2, ipadx=120)
     pump2_pms_label = Label(index_info_frame, text="PMS")
-    pump2_pms_label.grid(row=4, column=0)
+    pump2_pms_label.grid(row=2, column=0)
     pump2_ago_label = Label(index_info_frame, text="AGO")
-    pump2_ago_label.grid(row=4, column=2)
+    pump2_ago_label.grid(row=2, column=2)
 
-    pump3_label = Label(index_info_frame, text="Pump III")
-    pump3_label.grid(row=5, column=0, columnspan=2, ipadx=120)    
+    #pump3_label = Label(index_info_frame, text="Pump III")
+    #pump3_label.grid(row=5, column=0, columnspan=2, ipadx=120)    
     pump3_pms_label = Label(index_info_frame, text="PMS")
-    pump3_pms_label.grid(row=6, column=0)
+    pump3_pms_label.grid(row=3, column=0)
     pump3_ago_label = Label(index_info_frame, text="AGO")
-    pump3_ago_label.grid(row=6, column=2)
+    pump3_ago_label.grid(row=3, column=2)
 
     # Creating global variables for text box names
     global date_editor_branch1
@@ -3808,46 +4103,46 @@ def branchFtn():
     global pump3_ago_editor_branch1
 
     # Creating text boxes
-    date_editor_branch1 = Entry(index_info_frame, width=30)
+    date_editor_branch1 = Entry(index_info_frame, width=35)
     date_editor_branch1.grid(row=0, column=1, padx=20)
-    branch_editor_branch1 = Entry(index_info_frame, width=30)
-    branch_editor_branch1.grid(row=0, column=3)
+    branch_editor_branch1 = Entry(index_info_frame, width=35)
+    branch_editor_branch1.grid(row=0, column=3, padx=20)
     branch_editor_branch1.insert(0, str(clicked.get())) #this inserts the clicked branch into the text box
     branch_editor_branch1.config(state="disabled") #this prevents users from changing this value
 
-    pump1_editor_branch1 = Entry(index_info_frame, width=30)
-    pump1_editor_branch1.grid(row=1, column=2, pady=(5,0), columnspan=2, ipadx=90)
+    pump1_editor_branch1 = Entry(index_info_frame, width=20)
+    pump1_editor_branch1.grid(row=1, column=4, padx=20)
     pump1_editor_branch1.insert(0, str(1)) #this inserts the pump no. "1" into the text box
     pump1_editor_branch1.config(state="disabled") #this prevents users from changing this value
-    pump1_pms_editor_branch1 = Entry(index_info_frame, width=30)
-    pump1_pms_editor_branch1.grid(row=2, column=1)
-    pump1_ago_editor_branch1 = Entry(index_info_frame, width=30)
-    pump1_ago_editor_branch1.grid(row=2, column=3)
+    pump1_pms_editor_branch1 = Entry(index_info_frame, width=35)
+    pump1_pms_editor_branch1.grid(row=1, column=1)
+    pump1_ago_editor_branch1 = Entry(index_info_frame, width=35)
+    pump1_ago_editor_branch1.grid(row=1, column=3)
 
-    pump2_editor_branch1 = Entry(index_info_frame, width=30)
-    pump2_editor_branch1.grid(row=3, column=2, columnspan=2, ipadx=90)
+    pump2_editor_branch1 = Entry(index_info_frame, width=20)
+    pump2_editor_branch1.grid(row=2, column=4)
     pump2_editor_branch1.insert(0, str(2)) #this inserts the pump no. "2" into the text box
     pump2_editor_branch1.config(state="disabled") #this prevents users from changing this value
-    pump2_pms_editor_branch1 = Entry(index_info_frame, width=30)
-    pump2_pms_editor_branch1.grid(row=4, column=1)
-    pump2_ago_editor_branch1 = Entry(index_info_frame, width=30)
-    pump2_ago_editor_branch1.grid(row=4, column=3)
+    pump2_pms_editor_branch1 = Entry(index_info_frame, width=35)
+    pump2_pms_editor_branch1.grid(row=2, column=1)
+    pump2_ago_editor_branch1 = Entry(index_info_frame, width=35)
+    pump2_ago_editor_branch1.grid(row=2, column=3)
 
-    pump3_editor_branch1 = Entry(index_info_frame, width=30)
-    pump3_editor_branch1.grid(row=5, column=2, columnspan=2, ipadx=90)
+    pump3_editor_branch1 = Entry(index_info_frame, width=20)
+    pump3_editor_branch1.grid(row=3, column=4)
     pump3_editor_branch1.insert(0, str(3)) #this inserts the pump no. "3" into the text box
     pump3_editor_branch1.config(state="disabled") #this prevents users from changing this value
-    pump3_pms_editor_branch1 = Entry(index_info_frame, width=30)
-    pump3_pms_editor_branch1.grid(row=6, column=1)
-    pump3_ago_editor_branch1 = Entry(index_info_frame, width=30)
-    pump3_ago_editor_branch1.grid(row=6, column=3)
+    pump3_pms_editor_branch1 = Entry(index_info_frame, width=35)
+    pump3_pms_editor_branch1.grid(row=3, column=1)
+    pump3_ago_editor_branch1 = Entry(index_info_frame, width=35)
+    pump3_ago_editor_branch1.grid(row=3, column=3)
 
     # Creating buttons for Index
     index_cancel_btn = Button(index_info_frame, text="Cancel", command=indexCancelFtn)
-    index_cancel_btn.grid(row=7, column=1, pady=5, padx=(0,5), ipadx=50)
+    index_cancel_btn.grid(row=4, column=0, pady=5, padx=(0,5), ipadx=50, columnspan=2)
 
     index_submit_btn = Button(index_info_frame, text="Submit", command=indexSubmitFtn)
-    index_submit_btn.grid(row=7, column=2, pady=5, padx=(5,0), ipadx=60)
+    index_submit_btn.grid(row=4, column=2, pady=5, padx=(5,0), ipadx=60, columnspan=2)
 
     
     # ADDITIONAL INFO FRAME
@@ -3994,6 +4289,49 @@ def branchFtn():
     total_cdf_payments_label.grid(row=0, column=2)
     cummulative_cdf_payments_branch1 = Label(total_payments_frame, text="0", borderwidth=3, relief="sunken")
     cummulative_cdf_payments_branch1.grid(row=0, column=3, ipadx=87)
+
+    # SALES INFO FRAME
+
+    sales_info_frame = LabelFrame(frame, text="Sales Data")
+    sales_info_frame.grid(row=3, column=0, sticky="news", pady=3, padx=3)
+    
+    # Creating buttons to launch the advanced, credit, oneoff, indirect, wholesale and special sales windows
+    debt_sales_btn = Button(sales_info_frame, text="Debt Sales", command=debtSalesFtn)
+    debt_sales_btn.grid(row=0,column=0, pady=5, padx=5, ipadx=35)
+
+    advance_sales_btn = Button(sales_info_frame, text="Advance Sales", command=advanceSalesFtn)
+    advance_sales_btn.grid(row=0,column=1, pady=5, padx=5, ipadx=25)
+
+    oneoff_sales_btn = Button(sales_info_frame, text="One Off Sales", command=oneoffSalesFtn)
+    oneoff_sales_btn.grid(row=0,column=2, pady=5, padx=5, ipadx=25)
+
+    indirect_sales_btn = Button(sales_info_frame, text="Indirect Sales", command=indirectSalesFtn)
+    indirect_sales_btn.grid(row=0,column=3, pady=5, padx=5, ipadx=25)
+
+    cash_sales_btn = Button(sales_info_frame, text="Cash Sales", command=cashSalesFtn)
+    cash_sales_btn.grid(row=0,column=4, pady=5, padx=5, ipadx=35)
+
+    # TOTAL NON CASH SALES FRAME
+    total_noncash_sales_frame = LabelFrame(sales_info_frame)
+    total_noncash_sales_frame.grid(row=1, column=0, columnspan=5, padx=(40,0))
+    
+    """ # Global variables
+    global total_cummulative_dollar_payments_branch1
+    global total_cummulative_cdf_payments_branch1
+
+    total_cummulative_dollar_payments_branch1 = 0
+    total_cummulative_cdf_payments_branch1 = 0
+
+    # Creating labels to show the cummulative payments
+    total_dollar_payments_label = Label(total_payments_frame, text=" $ ")
+    total_dollar_payments_label.grid(row=0, column=0, pady=5)
+    cummulative_dollar_payments_branch1 = Label(total_payments_frame, text="0", borderwidth=3, relief="sunken")
+    cummulative_dollar_payments_branch1.grid(row=0, column=1, ipadx=87)
+
+    total_cdf_payments_label = Label(total_payments_frame, text=" CDF ")
+    total_cdf_payments_label.grid(row=0, column=2)
+    cummulative_cdf_payments_branch1 = Label(total_payments_frame, text="0", borderwidth=3, relief="sunken")
+    cummulative_cdf_payments_branch1.grid(row=0, column=3, ipadx=87) """
 
 #a Tkinter variable
 #global variable
