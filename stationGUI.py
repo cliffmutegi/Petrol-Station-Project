@@ -3536,7 +3536,7 @@ def branchFtn():
             c = conn.cursor()
             
              # Use parameterized query to avoid syntax errors and SQL injection
-            query = "SELECT credCustCurrID, credCustPrice FROM {0} WHERE credCustID = ? AND (credCustPriceDate = ? OR credCustPriceDate > ?) AND credCustProdID = ? ORDER BY credCustDetailID ASC".format(tblCustomer)
+            query = "SELECT credCustCurrID, credCustPrice FROM {0} WHERE credCustID = ? AND (credCustPriceDate = ? OR credCustPriceDate < ?) AND credCustProdID = ? ORDER BY credCustDetailID DESC LIMIT 1".format(tblCustomer)
             c.execute(query, (customerID, priceDate, priceDate, prodID))
 
             #print("Printing customerID {0}, priceDate {1}, prodID {2}".format(customerID, priceDate, prodID))
@@ -3659,18 +3659,47 @@ def branchFtn():
             # Retrieving the treeview values of removed records
             tree_removed_records_lst = [list(cred_sale_tree.item(record, 'values')) for record in removed_records_lst] #tree.item(index,'values') will return the values of the tree item with the specified index
             # list(cred_pay_tree.item(record, 'values')) ensures that the values are wrapped in a list instead of having a list of tupples
-            print("Printing tree_remeoved_records_lst: ", tree_removed_records_lst)                  
+            #print("Printing tree_remeoved_records_lst: ", tree_removed_records_lst)                  
             
             # updating the debt sale details list to exclude the removed items
             global cred_sale_items_lst_branch1
-            print("Printing cred_sale_items_lst_branch1 before removing: ", cred_sale_items_lst_branch1)
+            #print("Printing cred_sale_items_lst_branch1 before removing: ", cred_sale_items_lst_branch1)
             for item in tree_removed_records_lst:
-                #print("Printing item: ", item)
-                if item in cred_sale_items_lst_branch1: # check if the item is in the list
-                    cred_sale_items_lst_branch1.remove(item) # remove it from the list
+                # Ensuring the values are the same as those in cred_sale_items_lst_branch1
+                new_item = []
+                value1 = item[0]
+                new_item.append(value1)
+
+                value2 = item[1]
+                new_item.append(value2)
+
+                value3 = item[2]
+                new_item.append(value3)
+
+                value4 = item[3]
+                new_item.append(value4)
+
+                value5 = item[4]
+                new_item.append(value5)
+
+                if re.search(r"\d+\.\d+", item[5]) is not None: # r"\d+\.\d+" checks for a decimal number (float) with at least one digit before and after the decimal point
+                    value6 = float(item[5]) # is not None condition ensures that we correctly identify whether the input is a float or an integer
+                else:
+                    value6 = int(item[5])
+                new_item.append(value6)
+
+                value7 = item[6]
+                new_item.append(value7)
+
+                value8 = int(item[7])
+                new_item.append(value8)
+
+                #print("Printing new_item: ", new_item)
+                if new_item in cred_sale_items_lst_branch1: # check if the item is in the list
+                    cred_sale_items_lst_branch1.remove(new_item) # remove it from the list
 
 
-            print("Printing Credit Sale list After removal: ", cred_sale_items_lst_branch1)
+            #print("Printing Credit Sale list After removal: ", cred_sale_items_lst_branch1)
             
             # removing selected records in treeview
             x = cred_sale_tree.selection() 
